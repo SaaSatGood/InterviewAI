@@ -4,51 +4,41 @@ import { motion } from 'framer-motion';
 import { useAppStore } from '@/lib/store';
 import { Button } from './ui/Button';
 import {
-    CheckCircle2, XCircle, Lightbulb, RefreshCw, Download, Star, AlertTriangle,
+    CheckCircle2, XCircle, Lightbulb, RefreshCw, Download, AlertTriangle,
     Zap, Brain, MessageSquare, Briefcase, BookOpen, Target, TrendingUp, Award,
-    ChevronRight, GraduationCap, ThumbsUp, ThumbsDown, Clock, BarChart3, Settings
+    ChevronRight, GraduationCap, ThumbsUp, ThumbsDown, BarChart3, ArrowRight, Sparkles
 } from 'lucide-react';
 
-// Score Bar Component with Animation
-function ScoreBar({ score, label, icon: Icon, color, weight }: {
+// Score Bar Component - Consistent design
+function ScoreBar({ score, label, icon: Icon, weight }: {
     score: number;
     label: string;
     icon: React.ElementType;
-    color: string;
     weight: string;
 }) {
-    const colors = {
-        green: { bg: 'bg-green-500', light: 'bg-green-100', text: 'text-green-600' },
-        amber: { bg: 'bg-amber-500', light: 'bg-amber-100', text: 'text-amber-600' },
-        red: { bg: 'bg-red-500', light: 'bg-red-100', text: 'text-red-600' },
-        blue: { bg: 'bg-blue-500', light: 'bg-blue-100', text: 'text-blue-600' },
-    };
-
-    const scoreColor = score >= 70 ? 'green' : score >= 50 ? 'amber' : 'red';
-    const c = colors[scoreColor];
-
     return (
         <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="bg-white rounded-xl p-4 shadow-sm border border-slate-100"
+            whileHover={{ scale: 1.02 }}
+            className="bg-neutral-900/50 backdrop-blur-sm rounded-xl p-4 border border-neutral-800 hover:border-neutral-700 transition-all"
         >
             <div className="flex items-center gap-3 mb-3">
-                <div className={`p-2 rounded-lg ${c.light}`}>
-                    <Icon className={`w-5 h-5 ${c.text}`} />
+                <div className="p-2 rounded-lg bg-white/5">
+                    <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-400" />
                 </div>
-                <div className="flex-1">
-                    <p className="font-semibold text-slate-800">{label}</p>
-                    <p className="text-xs text-slate-400">{weight} weight</p>
+                <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-neutral-100 text-sm sm:text-base truncate">{label}</p>
+                    <p className="text-xs text-neutral-500">{weight}</p>
                 </div>
-                <span className={`text-2xl font-bold ${c.text}`}>{score}</span>
+                <span className="text-xl sm:text-2xl font-bold text-white">{score}</span>
             </div>
-            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+            <div className="h-2 bg-neutral-800 rounded-full overflow-hidden">
                 <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${score}%` }}
                     transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }}
-                    className={`h-full ${c.bg} rounded-full`}
+                    className="h-full bg-gradient-to-r from-white/60 to-white/90 rounded-full"
                 />
             </div>
         </motion.div>
@@ -56,51 +46,44 @@ function ScoreBar({ score, label, icon: Icon, color, weight }: {
 }
 
 // Question Card Component
-function QuestionCard({ qa, index }: { qa: any; index: number }) {
-    const scoreColor = qa.score >= 70 ? 'green' : qa.score >= 50 ? 'amber' : 'red';
-    const colors = {
-        green: { ring: 'ring-green-200', bg: 'bg-green-50', text: 'text-green-600' },
-        amber: { ring: 'ring-amber-200', bg: 'bg-amber-50', text: 'text-amber-600' },
-        red: { ring: 'ring-red-200', bg: 'bg-red-50', text: 'text-red-600' },
-    };
-    const c = colors[scoreColor];
-
+function QuestionCard({ qa, index, t }: { qa: any; index: number; t: (key: string) => string }) {
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className={`bg-white rounded-xl p-5 shadow-sm border border-slate-100 hover:shadow-md transition-all ring-2 ${c.ring}`}
+            whileHover={{ scale: 1.01 }}
+            className="bg-neutral-900/50 backdrop-blur-sm rounded-xl p-4 sm:p-5 border border-neutral-800 hover:border-neutral-700 transition-all"
         >
-            <div className="flex items-start justify-between gap-4 mb-4">
-                <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                        <span className="px-2 py-1 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-4">
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        <span className="px-2 py-1 bg-white/10 text-white text-xs font-bold rounded-full shrink-0">
                             Q{index + 1}
                         </span>
-                        <h4 className="font-semibold text-slate-800">{qa.topic}</h4>
+                        <h4 className="font-semibold text-neutral-100 text-sm sm:text-base">{qa.topic}</h4>
                     </div>
                 </div>
-                <div className={`px-3 py-2 rounded-xl ${c.bg} flex flex-col items-center`}>
-                    <span className={`text-xl font-bold ${c.text}`}>{qa.score}</span>
-                    <span className="text-xs text-slate-500">/100</span>
+                <div className="px-3 py-2 rounded-xl bg-white/5 flex flex-row sm:flex-col items-center gap-2 sm:gap-0 border border-neutral-800 self-start">
+                    <span className="text-lg sm:text-xl font-bold text-white">{qa.score}</span>
+                    <span className="text-xs text-neutral-500">/100</span>
                 </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
-                <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+                <div className="bg-neutral-800/50 p-3 sm:p-4 rounded-lg border border-neutral-700/50">
                     <div className="flex items-center gap-2 mb-2">
-                        <MessageSquare className="w-4 h-4 text-slate-500" />
-                        <p className="text-slate-600 text-xs font-semibold uppercase">Your Answer</p>
+                        <MessageSquare className="w-4 h-4 text-neutral-500 shrink-0" />
+                        <p className="text-neutral-400 text-xs font-semibold uppercase">{t('report.yourAnswer')}</p>
                     </div>
-                    <p className="text-slate-700 text-sm leading-relaxed">{qa.candidateAnswer}</p>
+                    <p className="text-neutral-300 text-xs sm:text-sm leading-relaxed">{qa.candidateAnswer}</p>
                 </div>
-                <div className="bg-amber-50 p-4 rounded-lg border border-amber-100">
+                <div className="bg-neutral-800/30 p-3 sm:p-4 rounded-lg border border-neutral-700/30">
                     <div className="flex items-center gap-2 mb-2">
-                        <Lightbulb className="w-4 h-4 text-amber-500" />
-                        <p className="text-amber-600 text-xs font-semibold uppercase">Could Improve</p>
+                        <Lightbulb className="w-4 h-4 text-neutral-400 shrink-0" />
+                        <p className="text-neutral-400 text-xs font-semibold uppercase">{t('report.couldImprove')}</p>
                     </div>
-                    <p className="text-slate-700 text-sm leading-relaxed">{qa.whatWasMissing}</p>
+                    <p className="text-neutral-300 text-xs sm:text-sm leading-relaxed">{qa.whatWasMissing}</p>
                 </div>
             </div>
         </motion.div>
@@ -112,19 +95,19 @@ interface InterviewReportProps {
 }
 
 export function InterviewReport({ onOpenSettings }: InterviewReportProps) {
-    const { report, resetSession } = useAppStore();
+    const { report, resetSession, t } = useAppStore();
 
     if (!report) return null;
 
     const getHiringBadge = (decision: string | undefined) => {
-        const badges: Record<string, { color: string; label: string; icon: React.ElementType }> = {
-            'STRONG_HIRE': { color: 'bg-gradient-to-r from-green-500 to-emerald-600', label: 'Strong Hire', icon: ThumbsUp },
-            'HIRE': { color: 'bg-gradient-to-r from-green-400 to-green-500', label: 'Hire', icon: ThumbsUp },
-            'LEAN_HIRE': { color: 'bg-gradient-to-r from-amber-400 to-amber-500', label: 'Lean Hire', icon: TrendingUp },
-            'LEAN_NO_HIRE': { color: 'bg-gradient-to-r from-orange-400 to-orange-500', label: 'Lean No Hire', icon: TrendingUp },
-            'NO_HIRE': { color: 'bg-gradient-to-r from-red-500 to-red-600', label: 'No Hire', icon: ThumbsDown },
+        const badges: Record<string, { bg: string; label: string; icon: React.ElementType }> = {
+            'STRONG_HIRE': { bg: 'bg-white text-neutral-900', label: t('hiring.strongHire'), icon: ThumbsUp },
+            'HIRE': { bg: 'bg-white/90 text-neutral-900', label: t('hiring.hire'), icon: ThumbsUp },
+            'LEAN_HIRE': { bg: 'bg-white/70 text-neutral-900', label: t('hiring.leanHire'), icon: TrendingUp },
+            'LEAN_NO_HIRE': { bg: 'bg-neutral-700 text-white', label: t('hiring.leanNoHire'), icon: TrendingUp },
+            'NO_HIRE': { bg: 'bg-neutral-800 text-neutral-300', label: t('hiring.noHire'), icon: ThumbsDown },
         };
-        return badges[decision || ''] || { color: 'bg-slate-500', label: 'Evaluated', icon: BarChart3 };
+        return badges[decision || ''] || { bg: 'bg-neutral-700 text-white', label: 'Evaluated', icon: BarChart3 };
     };
 
     const hiringBadge = getHiringBadge(report.hiringDecision);
@@ -144,34 +127,70 @@ export function InterviewReport({ onOpenSettings }: InterviewReportProps) {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-indigo-100 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-neutral-950 py-6 sm:py-8 px-3 sm:px-4 md:px-6 lg:px-8 relative overflow-hidden">
+            {/* Background effects - same as landing page */}
+            <div className="absolute inset-0 bg-gradient-to-b from-neutral-950 via-neutral-950 to-neutral-900"></div>
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] sm:w-[800px] h-[400px] sm:h-[600px] bg-white/[0.02] rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 right-0 w-[400px] sm:w-[600px] h-[300px] sm:h-[400px] bg-white/[0.01] rounded-full blur-3xl"></div>
+
             <motion.div
                 initial="hidden"
                 animate="visible"
                 variants={staggerContainer}
-                className="max-w-5xl mx-auto space-y-6"
+                className="max-w-5xl mx-auto space-y-4 sm:space-y-6 relative z-10"
             >
                 {/* Header Card */}
-                <motion.div variants={fadeInUp} className="bg-white rounded-3xl shadow-2xl overflow-hidden">
-                    <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 p-10 text-white relative overflow-hidden">
-                        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRoLTJ2LTRoMnY0em0wLTZ2LTRoLTJ2NGgyem0tNiA2aC00djJoNHYtMnptMC02djRoLTR2LTRoNHptLTYgNmgtNHYyaDR2LTJ6bTAtNnY0aC00di00aDR6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30"></div>
+                <motion.div variants={fadeInUp} className="bg-neutral-900/50 backdrop-blur-sm rounded-2xl sm:rounded-3xl border border-neutral-800 overflow-hidden">
+                    <div className="bg-gradient-to-r from-neutral-800 to-neutral-900 p-6 sm:p-8 lg:p-10 text-white relative overflow-hidden">
+                        {/* Animated background pattern */}
+                        <motion.div
+                            className="absolute inset-0 opacity-10"
+                            animate={{
+                                backgroundPosition: ['0% 0%', '100% 100%'],
+                            }}
+                            transition={{
+                                duration: 20,
+                                repeat: Infinity,
+                                repeatType: 'reverse',
+                            }}
+                            style={{
+                                backgroundImage: 'url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRoLTJ2LTRoMnY0em0wLTZ2LTRoLTJ2NGgyem0tNiA2aC00djJoNHYtMnptMC02djRoLTR2LTRoNHptLTYgNmgtNHYyaDR2LTJ6bTAtNnY0aC00di00aDR6Ii8+PC9nPjwvZz48L3N2Zz4=")',
+                                backgroundSize: '60px 60px',
+                            }}
+                        />
                         <div className="relative z-10 text-center">
                             <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
+                                initial={{ scale: 0, rotate: -180 }}
+                                animate={{ scale: 1, rotate: 0 }}
                                 transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
                                 className="inline-block"
                             >
-                                <Award className="w-16 h-16 mx-auto mb-4" />
+                                <div className="w-14 h-14 sm:w-20 sm:h-20 bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 border border-white/20">
+                                    <Award className="w-7 h-7 sm:w-10 sm:h-10" />
+                                </div>
                             </motion.div>
-                            <h1 className="text-4xl font-bold mb-2">Interview Evaluation</h1>
-                            <p className="text-white/80 text-lg">Technical Performance Report</p>
+                            <motion.h1
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.3 }}
+                                className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-1 sm:mb-2"
+                            >
+                                {t('report.title')}
+                            </motion.h1>
+                            <motion.p
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.4 }}
+                                className="text-white/60 text-sm sm:text-base lg:text-lg"
+                            >
+                                {t('report.subtitle')}
+                            </motion.p>
                         </div>
                     </div>
 
-                    <div className="p-8 lg:p-10">
+                    <div className="p-4 sm:p-6 lg:p-10">
                         {/* Score Display */}
-                        <div className="flex flex-col lg:flex-row items-center justify-center gap-10 mb-12">
+                        <div className="flex flex-col lg:flex-row items-center justify-center gap-6 sm:gap-8 lg:gap-10 mb-8 sm:mb-12">
                             {/* Circle Score */}
                             <motion.div
                                 initial={{ scale: 0.8, opacity: 0 }}
@@ -179,11 +198,11 @@ export function InterviewReport({ onOpenSettings }: InterviewReportProps) {
                                 transition={{ type: 'spring', stiffness: 100 }}
                                 className="relative"
                             >
-                                <div className="w-48 h-48 relative">
+                                <div className="w-36 h-36 sm:w-44 sm:h-44 lg:w-48 lg:h-48 relative">
                                     <svg className="w-full h-full transform -rotate-90" viewBox="0 0 128 128">
                                         <circle
-                                            className="text-slate-200"
-                                            strokeWidth="14"
+                                            className="text-neutral-800"
+                                            strokeWidth="12"
                                             stroke="currentColor"
                                             fill="transparent"
                                             r="50"
@@ -194,8 +213,8 @@ export function InterviewReport({ onOpenSettings }: InterviewReportProps) {
                                             initial={{ strokeDashoffset: 314 }}
                                             animate={{ strokeDashoffset: 314 - (314 * report.score) / 100 }}
                                             transition={{ duration: 1.5, ease: 'easeOut' }}
-                                            className={report.score >= 70 ? 'text-green-500' : report.score >= 50 ? 'text-amber-500' : 'text-red-500'}
-                                            strokeWidth="14"
+                                            className="text-white"
+                                            strokeWidth="12"
                                             strokeDasharray={314}
                                             strokeLinecap="round"
                                             stroke="currentColor"
@@ -207,14 +226,14 @@ export function InterviewReport({ onOpenSettings }: InterviewReportProps) {
                                     </svg>
                                     <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
                                         <motion.span
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            transition={{ delay: 0.5 }}
-                                            className={`text-6xl font-bold ${report.score >= 70 ? 'text-green-600' : report.score >= 50 ? 'text-amber-600' : 'text-red-600'}`}
+                                            initial={{ opacity: 0, scale: 0.5 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            transition={{ delay: 0.5, type: 'spring' }}
+                                            className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white"
                                         >
                                             {report.score}
                                         </motion.span>
-                                        <span className="block text-sm text-slate-500 font-medium mt-1">OVERALL</span>
+                                        <span className="block text-xs sm:text-sm text-neutral-500 font-medium mt-1 uppercase">{t('report.overall')}</span>
                                     </div>
                                 </div>
                             </motion.div>
@@ -226,30 +245,33 @@ export function InterviewReport({ onOpenSettings }: InterviewReportProps) {
                                 transition={{ delay: 0.3 }}
                                 className="text-center lg:text-left"
                             >
-                                <span className={`inline-flex items-center gap-3 px-8 py-4 rounded-2xl text-white font-bold text-xl ${hiringBadge.color} shadow-xl`}>
-                                    <HiringIcon className="w-7 h-7" />
-                                    {hiringBadge.label}
-                                </span>
-                                <p className="text-slate-500 text-sm mt-4 max-w-xs">
-                                    Based on comprehensive analysis of technical skills, problem-solving, and communication
-                                </p>
+                                <motion.div
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="relative inline-block"
+                                >
+                                    <span className={`relative inline-flex items-center gap-2 sm:gap-3 px-5 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg lg:text-xl ${hiringBadge.bg} shadow-xl`}>
+                                        <HiringIcon className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7" />
+                                        {hiringBadge.label}
+                                    </span>
+                                </motion.div>
                             </motion.div>
                         </div>
 
                         {/* Score Bars */}
                         {(report.technicalScore !== undefined || report.problemSolvingScore !== undefined) && (
-                            <div className="grid md:grid-cols-2 gap-4 mb-10">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-8 sm:mb-10">
                                 {report.technicalScore !== undefined && (
-                                    <ScoreBar score={report.technicalScore} label="Technical Knowledge" icon={Brain} color="blue" weight="40%" />
+                                    <ScoreBar score={report.technicalScore} label={t('score.technical')} icon={Brain} weight="40%" />
                                 )}
                                 {report.problemSolvingScore !== undefined && (
-                                    <ScoreBar score={report.problemSolvingScore} label="Problem Solving" icon={Zap} color="blue" weight="25%" />
+                                    <ScoreBar score={report.problemSolvingScore} label={t('score.problemSolving')} icon={Zap} weight="25%" />
                                 )}
                                 {report.communicationScore !== undefined && (
-                                    <ScoreBar score={report.communicationScore} label="Communication" icon={MessageSquare} color="blue" weight="20%" />
+                                    <ScoreBar score={report.communicationScore} label={t('score.communication')} icon={MessageSquare} weight="20%" />
                                 )}
                                 {report.experienceScore !== undefined && (
-                                    <ScoreBar score={report.experienceScore} label="Experience" icon={Briefcase} color="blue" weight="15%" />
+                                    <ScoreBar score={report.experienceScore} label={t('score.experience')} icon={Briefcase} weight="15%" />
                                 )}
                             </div>
                         )}
@@ -257,53 +279,54 @@ export function InterviewReport({ onOpenSettings }: InterviewReportProps) {
                         {/* Executive Summary */}
                         <motion.div
                             variants={fadeInUp}
-                            className="bg-gradient-to-r from-slate-50 to-blue-50 p-6 rounded-2xl border border-slate-200 mb-8"
+                            className="bg-white/5 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-neutral-800 mb-6 sm:mb-8"
                         >
-                            <h3 className="text-slate-900 font-bold mb-3 flex items-center gap-2 text-lg">
-                                <Star className="w-5 h-5 text-amber-500" /> Executive Summary
+                            <h3 className="text-neutral-100 font-bold mb-2 sm:mb-3 flex items-center gap-2 text-base sm:text-lg">
+                                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-400" /> {t('report.summary')}
                             </h3>
-                            <p className="text-slate-700 leading-relaxed">{report.feedback}</p>
+                            <p className="text-neutral-300 text-sm sm:text-base leading-relaxed">{report.feedback}</p>
                         </motion.div>
                     </div>
                 </motion.div>
 
                 {/* Question-by-Question Analysis */}
                 {report.questionAnalysis && report.questionAnalysis.length > 0 && (
-                    <motion.div variants={fadeInUp} className="bg-white rounded-3xl shadow-xl p-8">
-                        <h3 className="text-2xl font-bold flex items-center gap-3 text-slate-800 mb-6">
-                            <div className="p-2 bg-indigo-100 rounded-xl">
-                                <Target className="w-6 h-6 text-indigo-600" />
+                    <motion.div variants={fadeInUp} className="bg-neutral-900/50 backdrop-blur-sm rounded-2xl sm:rounded-3xl border border-neutral-800 p-4 sm:p-6 lg:p-8">
+                        <h3 className="text-xl sm:text-2xl font-bold flex items-center gap-2 sm:gap-3 text-neutral-100 mb-4 sm:mb-6">
+                            <div className="p-1.5 sm:p-2 bg-white/5 rounded-lg sm:rounded-xl">
+                                <Target className="w-5 h-5 sm:w-6 sm:h-6 text-neutral-400" />
                             </div>
-                            Question Analysis
+                            {t('report.questionAnalysis')}
                         </h3>
-                        <div className="space-y-4">
+                        <div className="space-y-3 sm:space-y-4">
                             {report.questionAnalysis.map((qa: any, idx: number) => (
-                                <QuestionCard key={idx} qa={qa} index={idx} />
+                                <QuestionCard key={idx} qa={qa} index={idx} t={t} />
                             ))}
                         </div>
                     </motion.div>
                 )}
 
                 {/* Highlights & Critical Gaps */}
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     {report.interviewHighlights && report.interviewHighlights.length > 0 && (
-                        <motion.div variants={fadeInUp} className="bg-white rounded-3xl shadow-xl p-6">
-                            <h3 className="text-lg font-bold flex items-center gap-2 text-green-700 mb-4">
-                                <div className="p-2 bg-green-100 rounded-xl">
-                                    <Zap className="w-5 h-5 text-green-600" />
+                        <motion.div variants={fadeInUp} className="bg-neutral-900/50 backdrop-blur-sm rounded-2xl sm:rounded-3xl border border-neutral-800 p-4 sm:p-6">
+                            <h3 className="text-base sm:text-lg font-bold flex items-center gap-2 text-neutral-100 mb-3 sm:mb-4">
+                                <div className="p-1.5 sm:p-2 bg-white/5 rounded-lg sm:rounded-xl">
+                                    <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-400" />
                                 </div>
-                                Best Moments
+                                {t('report.bestMoments')}
                             </h3>
-                            <ul className="space-y-3">
+                            <ul className="space-y-2 sm:space-y-3">
                                 {report.interviewHighlights.map((highlight: string, idx: number) => (
                                     <motion.li
                                         key={idx}
                                         initial={{ opacity: 0, x: -10 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: idx * 0.1 }}
-                                        className="flex gap-3 text-slate-700 bg-green-50 p-4 rounded-xl text-sm border border-green-100"
+                                        whileHover={{ x: 4 }}
+                                        className="flex gap-2 sm:gap-3 text-neutral-300 bg-white/5 p-3 sm:p-4 rounded-lg sm:rounded-xl text-xs sm:text-sm border border-neutral-800"
                                     >
-                                        <span className="text-green-500 text-lg">★</span>
+                                        <span className="text-white text-base sm:text-lg shrink-0">★</span>
                                         <span>{highlight}</span>
                                     </motion.li>
                                 ))}
@@ -312,23 +335,24 @@ export function InterviewReport({ onOpenSettings }: InterviewReportProps) {
                     )}
 
                     {report.criticalGaps && report.criticalGaps.length > 0 && (
-                        <motion.div variants={fadeInUp} className="bg-white rounded-3xl shadow-xl p-6">
-                            <h3 className="text-lg font-bold flex items-center gap-2 text-red-700 mb-4">
-                                <div className="p-2 bg-red-100 rounded-xl">
-                                    <AlertTriangle className="w-5 h-5 text-red-600" />
+                        <motion.div variants={fadeInUp} className="bg-neutral-900/50 backdrop-blur-sm rounded-2xl sm:rounded-3xl border border-neutral-800 p-4 sm:p-6">
+                            <h3 className="text-base sm:text-lg font-bold flex items-center gap-2 text-neutral-100 mb-3 sm:mb-4">
+                                <div className="p-1.5 sm:p-2 bg-white/5 rounded-lg sm:rounded-xl">
+                                    <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-400" />
                                 </div>
-                                Priority Improvements
+                                {t('report.priorityImprovements')}
                             </h3>
-                            <ul className="space-y-3">
+                            <ul className="space-y-2 sm:space-y-3">
                                 {report.criticalGaps.map((gap: string, idx: number) => (
                                     <motion.li
                                         key={idx}
                                         initial={{ opacity: 0, x: -10 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: idx * 0.1 }}
-                                        className="flex gap-3 text-slate-700 bg-red-50 p-4 rounded-xl text-sm border border-red-100"
+                                        whileHover={{ x: 4 }}
+                                        className="flex gap-2 sm:gap-3 text-neutral-300 bg-white/5 p-3 sm:p-4 rounded-lg sm:rounded-xl text-xs sm:text-sm border border-neutral-800"
                                     >
-                                        <span className="text-red-500 text-lg">!</span>
+                                        <span className="text-neutral-400 text-base sm:text-lg shrink-0">!</span>
                                         <span>{gap}</span>
                                     </motion.li>
                                 ))}
@@ -338,32 +362,40 @@ export function InterviewReport({ onOpenSettings }: InterviewReportProps) {
                 </div>
 
                 {/* Strengths & Weaknesses */}
-                <motion.div variants={fadeInUp} className="bg-white rounded-3xl shadow-xl p-8">
-                    <div className="grid md:grid-cols-2 gap-8">
+                <motion.div variants={fadeInUp} className="bg-neutral-900/50 backdrop-blur-sm rounded-2xl sm:rounded-3xl border border-neutral-800 p-4 sm:p-6 lg:p-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
                         <div>
-                            <h3 className="text-lg font-bold flex items-center gap-2 text-green-700 mb-4">
-                                <CheckCircle2 className="w-5 h-5" /> Strengths
+                            <h3 className="text-base sm:text-lg font-bold flex items-center gap-2 text-neutral-100 mb-3 sm:mb-4">
+                                <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-300" /> {t('report.strengths')}
                             </h3>
                             <ul className="space-y-2">
                                 {report.strengths.map((str: string, idx: number) => (
-                                    <li key={idx} className="flex gap-3 text-slate-700 text-sm py-2">
-                                        <ChevronRight className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                                    <motion.li
+                                        key={idx}
+                                        whileHover={{ x: 4 }}
+                                        className="flex gap-2 sm:gap-3 text-neutral-300 text-xs sm:text-sm py-2"
+                                    >
+                                        <ChevronRight className="w-4 h-4 text-white mt-0.5 shrink-0" />
                                         <span>{str}</span>
-                                    </li>
+                                    </motion.li>
                                 ))}
                             </ul>
                         </div>
 
                         <div>
-                            <h3 className="text-lg font-bold flex items-center gap-2 text-red-700 mb-4">
-                                <XCircle className="w-5 h-5" /> Areas for Improvement
+                            <h3 className="text-base sm:text-lg font-bold flex items-center gap-2 text-neutral-100 mb-3 sm:mb-4">
+                                <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-500" /> {t('report.weaknesses')}
                             </h3>
                             <ul className="space-y-2">
                                 {report.weaknesses.map((weak: string, idx: number) => (
-                                    <li key={idx} className="flex gap-3 text-slate-700 text-sm py-2">
-                                        <ChevronRight className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
+                                    <motion.li
+                                        key={idx}
+                                        whileHover={{ x: 4 }}
+                                        className="flex gap-2 sm:gap-3 text-neutral-300 text-xs sm:text-sm py-2"
+                                    >
+                                        <ChevronRight className="w-4 h-4 text-neutral-500 mt-0.5 shrink-0" />
                                         <span>{weak}</span>
-                                    </li>
+                                    </motion.li>
                                 ))}
                             </ul>
                         </div>
@@ -372,32 +404,37 @@ export function InterviewReport({ onOpenSettings }: InterviewReportProps) {
 
                 {/* Study Plan */}
                 {report.studyPlan && report.studyPlan.length > 0 && (
-                    <motion.div variants={fadeInUp} className="bg-white rounded-3xl shadow-xl p-8">
-                        <h3 className="text-2xl font-bold flex items-center gap-3 text-indigo-700 mb-6">
-                            <div className="p-2 bg-indigo-100 rounded-xl">
-                                <GraduationCap className="w-6 h-6 text-indigo-600" />
+                    <motion.div variants={fadeInUp} className="bg-neutral-900/50 backdrop-blur-sm rounded-2xl sm:rounded-3xl border border-neutral-800 p-4 sm:p-6 lg:p-8">
+                        <h3 className="text-xl sm:text-2xl font-bold flex items-center gap-2 sm:gap-3 text-neutral-100 mb-4 sm:mb-6">
+                            <div className="p-1.5 sm:p-2 bg-white/5 rounded-lg sm:rounded-xl">
+                                <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6 text-neutral-400" />
                             </div>
-                            Personalized Study Plan
+                            {t('report.studyPlan')}
                         </h3>
-                        <div className="space-y-4">
+                        <div className="space-y-3 sm:space-y-4">
                             {report.studyPlan.map((item: any, idx: number) => (
                                 <motion.div
                                     key={idx}
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: idx * 0.1 }}
-                                    className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-2xl border border-indigo-100"
+                                    whileHover={{ scale: 1.01 }}
+                                    className="bg-white/5 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-neutral-800"
                                 >
-                                    <div className="flex items-start gap-4">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl flex items-center justify-center font-bold text-lg shadow-lg shrink-0">
+                                    <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
+                                        <motion.div
+                                            whileHover={{ rotate: 360 }}
+                                            transition={{ duration: 0.5 }}
+                                            className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-neutral-900 rounded-lg sm:rounded-xl flex items-center justify-center font-bold text-base sm:text-lg shadow-lg shrink-0"
+                                        >
                                             {idx + 1}
-                                        </div>
-                                        <div className="flex-1">
-                                            <h4 className="font-bold text-slate-800 text-lg mb-2">{item.topic}</h4>
-                                            <p className="text-slate-600 text-sm mb-3">{item.reason}</p>
-                                            <div className="flex items-start gap-2 bg-white p-3 rounded-xl border border-indigo-100">
-                                                <BookOpen className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" />
-                                                <p className="text-indigo-700 text-sm">{item.resources}</p>
+                                        </motion.div>
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className="font-bold text-neutral-100 text-base sm:text-lg mb-1 sm:mb-2">{item.topic}</h4>
+                                            <p className="text-neutral-400 text-xs sm:text-sm mb-2 sm:mb-3">{item.reason}</p>
+                                            <div className="flex items-start gap-2 bg-neutral-800/50 p-2 sm:p-3 rounded-lg sm:rounded-xl border border-neutral-700/50">
+                                                <BookOpen className="w-4 h-4 text-neutral-400 mt-0.5 shrink-0" />
+                                                <p className="text-neutral-300 text-xs sm:text-sm">{item.resources}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -408,24 +445,25 @@ export function InterviewReport({ onOpenSettings }: InterviewReportProps) {
                 )}
 
                 {/* Action Plan & Next Interview Tips */}
-                <div className="grid md:grid-cols-2 gap-6">
-                    <motion.div variants={fadeInUp} className="bg-white rounded-3xl shadow-xl p-6">
-                        <h3 className="text-lg font-bold flex items-center gap-2 text-amber-600 mb-4">
-                            <div className="p-2 bg-amber-100 rounded-xl">
-                                <Lightbulb className="w-5 h-5 text-amber-500" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    <motion.div variants={fadeInUp} className="bg-neutral-900/50 backdrop-blur-sm rounded-2xl sm:rounded-3xl border border-neutral-800 p-4 sm:p-6">
+                        <h3 className="text-base sm:text-lg font-bold flex items-center gap-2 text-neutral-100 mb-3 sm:mb-4">
+                            <div className="p-1.5 sm:p-2 bg-white/5 rounded-lg sm:rounded-xl">
+                                <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-400" />
                             </div>
-                            Action Plan
+                            {t('report.actionPlan')}
                         </h3>
-                        <div className="space-y-3">
+                        <div className="space-y-2 sm:space-y-3">
                             {report.suggestions.map((sugg: string, idx: number) => (
                                 <motion.div
                                     key={idx}
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: idx * 0.1 }}
-                                    className="bg-amber-50 p-4 rounded-xl border border-amber-100 text-slate-700 text-sm flex gap-3"
+                                    whileHover={{ x: 4 }}
+                                    className="bg-white/5 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-neutral-800 text-neutral-300 text-xs sm:text-sm flex gap-2 sm:gap-3"
                                 >
-                                    <span className="w-6 h-6 bg-amber-200 text-amber-700 rounded-full flex items-center justify-center font-bold text-xs shrink-0">
+                                    <span className="w-5 h-5 sm:w-6 sm:h-6 bg-white text-neutral-900 rounded-full flex items-center justify-center font-bold text-xs shrink-0">
                                         {idx + 1}
                                     </span>
                                     <span>{sugg}</span>
@@ -435,23 +473,24 @@ export function InterviewReport({ onOpenSettings }: InterviewReportProps) {
                     </motion.div>
 
                     {report.nextInterviewTips && report.nextInterviewTips.length > 0 && (
-                        <motion.div variants={fadeInUp} className="bg-white rounded-3xl shadow-xl p-6">
-                            <h3 className="text-lg font-bold flex items-center gap-2 text-blue-600 mb-4">
-                                <div className="p-2 bg-blue-100 rounded-xl">
-                                    <TrendingUp className="w-5 h-5 text-blue-500" />
+                        <motion.div variants={fadeInUp} className="bg-neutral-900/50 backdrop-blur-sm rounded-2xl sm:rounded-3xl border border-neutral-800 p-4 sm:p-6">
+                            <h3 className="text-base sm:text-lg font-bold flex items-center gap-2 text-neutral-100 mb-3 sm:mb-4">
+                                <div className="p-1.5 sm:p-2 bg-white/5 rounded-lg sm:rounded-xl">
+                                    <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-400" />
                                 </div>
-                                Next Interview Tips
+                                {t('report.nextTips')}
                             </h3>
-                            <ul className="space-y-3">
+                            <ul className="space-y-2 sm:space-y-3">
                                 {report.nextInterviewTips.map((tip: string, idx: number) => (
                                     <motion.li
                                         key={idx}
                                         initial={{ opacity: 0, x: -10 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: idx * 0.1 }}
-                                        className="flex gap-3 text-slate-700 bg-blue-50 p-4 rounded-xl text-sm border border-blue-100"
+                                        whileHover={{ x: 4 }}
+                                        className="flex gap-2 sm:gap-3 text-neutral-300 bg-white/5 p-3 sm:p-4 rounded-lg sm:rounded-xl text-xs sm:text-sm border border-neutral-800"
                                     >
-                                        <span className="text-blue-500 font-bold">→</span>
+                                        <span className="text-white font-bold shrink-0">→</span>
                                         <span>{tip}</span>
                                     </motion.li>
                                 ))}
@@ -461,13 +500,59 @@ export function InterviewReport({ onOpenSettings }: InterviewReportProps) {
                 </div>
 
                 {/* Actions */}
-                <motion.div variants={fadeInUp} className="bg-white rounded-3xl shadow-xl p-8">
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Button onClick={resetSession} size="lg" className="px-10 py-4 text-lg">
-                            <RefreshCw className="mr-2 w-5 h-5" /> New Interview
-                        </Button>
-                        <Button variant="outline" size="lg" onClick={() => window.print()} className="px-10 py-4 text-lg">
-                            <Download className="mr-2 w-5 h-5" /> Export PDF
+                <motion.div variants={fadeInUp} className="bg-neutral-900/50 backdrop-blur-sm rounded-2xl sm:rounded-3xl border border-neutral-800 p-4 sm:p-6 lg:p-8">
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+                        {/* Animated New Interview Button */}
+                        <motion.div
+                            className="relative inline-block w-full sm:w-auto"
+                            whileHover={{ scale: 1.03 }}
+                            whileTap={{ scale: 0.98 }}
+                        >
+                            <motion.div
+                                className="absolute inset-0 bg-white/20 rounded-lg blur-lg opacity-50"
+                                animate={{
+                                    opacity: [0.3, 0.5, 0.3],
+                                    scale: [1, 1.02, 1],
+                                }}
+                                transition={{
+                                    duration: 2,
+                                    repeat: Infinity,
+                                    ease: "easeInOut",
+                                }}
+                            />
+                            <Button onClick={resetSession} size="lg" className="relative w-full sm:w-auto px-6 sm:px-10 py-3 sm:py-4 text-base sm:text-lg overflow-hidden group bg-white text-neutral-900 hover:bg-neutral-100">
+                                <motion.div
+                                    className="absolute inset-0 bg-gradient-to-r from-transparent via-neutral-200/50 to-transparent -skew-x-12"
+                                    animate={{ x: ['-200%', '200%'] }}
+                                    transition={{
+                                        duration: 3,
+                                        repeat: Infinity,
+                                        repeatDelay: 2,
+                                        ease: "easeInOut",
+                                    }}
+                                />
+                                <RefreshCw className="mr-2 w-4 h-4 sm:w-5 sm:h-5 relative" />
+                                <span className="relative">{t('report.newInterview')}</span>
+                                <motion.span
+                                    className="relative ml-2"
+                                    animate={{ x: [0, 4, 0] }}
+                                    transition={{
+                                        duration: 1.5,
+                                        repeat: Infinity,
+                                        ease: "easeInOut",
+                                    }}
+                                >
+                                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                                </motion.span>
+                            </Button>
+                        </motion.div>
+                        <Button
+                            variant="outline"
+                            size="lg"
+                            onClick={() => window.print()}
+                            className="w-full sm:w-auto px-6 sm:px-10 py-3 sm:py-4 text-base sm:text-lg border-neutral-700 text-neutral-300 hover:bg-neutral-800"
+                        >
+                            <Download className="mr-2 w-4 h-4 sm:w-5 sm:h-5" /> {t('report.exportPdf')}
                         </Button>
                     </div>
                 </motion.div>

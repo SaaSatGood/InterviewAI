@@ -5,7 +5,7 @@ import { generateSystemPrompt, generateReportPrompt } from '@/lib/prompts';
 import { Message } from '@/types';
 
 export function useInterview() {
-    const { getActiveKey, userProfile } = useAppStore();
+    const { getActiveKey, userProfile, language } = useAppStore();
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -25,7 +25,7 @@ export function useInterview() {
         setError(null);
 
         try {
-            const systemPrompt = generateSystemPrompt(userProfile);
+            const systemPrompt = generateSystemPrompt(userProfile, language);
 
             const responseContent = await sendChatRequest({
                 apiKey: activeKey.key,
@@ -41,7 +41,7 @@ export function useInterview() {
         } finally {
             setIsLoading(false);
         }
-    }, [activeKey, userProfile, messages]);
+    }, [activeKey, userProfile, messages, language]);
 
     // Initial greeting
     useEffect(() => {
@@ -55,7 +55,7 @@ export function useInterview() {
                         apiKey: activeKey.key,
                         provider: activeKey.provider,
                         messages: [{ role: 'user', content: "Please introduce yourself and start the interview." }],
-                        systemPrompt: generateSystemPrompt(userProfile)
+                        systemPrompt: generateSystemPrompt(userProfile, language)
                     });
 
                     setMessages([{ role: 'assistant', content: responseContent }]);
@@ -68,7 +68,7 @@ export function useInterview() {
 
             startInterview();
         }
-    }, [activeKey, userProfile]);
+    }, [activeKey, userProfile, language]);
 
     const finishInterview = async () => {
         if (!activeKey || !userProfile || messages.length === 0) return;
@@ -77,7 +77,7 @@ export function useInterview() {
         setError(null);
 
         try {
-            const prompt = generateReportPrompt(userProfile);
+            const prompt = generateReportPrompt(userProfile, language);
             const reportData = await generateReport({
                 apiKey: activeKey.key,
                 provider: activeKey.provider,
@@ -102,5 +102,3 @@ export function useInterview() {
         finishInterview
     };
 }
-
-

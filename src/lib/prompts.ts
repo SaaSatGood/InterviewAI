@@ -1,6 +1,37 @@
-import { UserProfile } from './store';
+import { UserProfile, ResumeData, JobContext } from './store';
 import { POSITIONS, STACKS, DIFFICULTIES, SOFT_SKILLS, BUSINESS_TOPICS, MODERN_PRACTICES, getRandomInterviewerName } from './constants';
 import { Language } from './i18n';
+
+// Language-specific context sections
+const CONTEXT_TEMPLATES = {
+  en: {
+    candidateSection: '## CANDIDATE BACKGROUND (USE THIS TO PERSONALIZE QUESTIONS)',
+    resumeLabel: 'Resume Summary:',
+    targetPosition: '## TARGET POSITION CONTEXT',
+    companyLabel: 'Target Company:',
+    roleLabel: 'Target Role:',
+    descriptionLabel: 'Job Description:',
+    instruction: 'Use this context to tailor your questions to the specific company and role the candidate is targeting.',
+  },
+  pt: {
+    candidateSection: '## HISTÓRICO DO CANDIDATO (USE ISSO PARA PERSONALIZAR PERGUNTAS)',
+    resumeLabel: 'Resumo do Currículo:',
+    targetPosition: '## CONTEXTO DA VAGA ALVO',
+    companyLabel: 'Empresa Alvo:',
+    roleLabel: 'Cargo Alvo:',
+    descriptionLabel: 'Descrição da Vaga:',
+    instruction: 'Use este contexto para adaptar suas perguntas à empresa e vaga específicas que o candidato está buscando.',
+  },
+  es: {
+    candidateSection: '## ANTECEDENTES DEL CANDIDATO (USA ESTO PARA PERSONALIZAR PREGUNTAS)',
+    resumeLabel: 'Resumen del CV:',
+    targetPosition: '## CONTEXTO DEL PUESTO OBJETIVO',
+    companyLabel: 'Empresa Objetivo:',
+    roleLabel: 'Puesto Objetivo:',
+    descriptionLabel: 'Descripción del Puesto:',
+    instruction: 'Usa este contexto para adaptar tus preguntas a la empresa y puesto específicos que el candidato está buscando.',
+  },
+};
 
 // Language-specific prompt templates
 const LANGUAGE_CONFIG = {
@@ -189,7 +220,16 @@ Inicia la entrevista presentándote en español y pidiéndole al candidato que h
   },
 };
 
-export function generateSystemPrompt(profile: UserProfile, language: Language = 'en'): string {
+interface PromptContext {
+  resumeData?: ResumeData | null;
+  jobContext?: JobContext | null;
+}
+
+export function generateSystemPrompt(
+  profile: UserProfile,
+  language: Language = 'en',
+  context?: PromptContext
+): string {
   const positionLabel = POSITIONS.find(p => p.id === profile.position)?.label || profile.position;
   const stackLabels = profile.stacks.map(stackId =>
     STACKS[profile.position as keyof typeof STACKS]?.find(s => s.id === stackId)?.label || stackId
@@ -211,7 +251,30 @@ export function generateSystemPrompt(profile: UserProfile, language: Language = 
 
   const hasExtendedTopics = !!(softSkillLabels || businessTopicLabels || modernPracticeLabels);
   const config = LANGUAGE_CONFIG[language];
+  const ctxTemplates = CONTEXT_TEMPLATES[language];
   const levelKey = profile.level as keyof typeof config.guidelines;
+
+  // Build context sections
+  let contextSection = '';
+
+  if (context?.resumeData?.summary) {
+    contextSection += `
+${ctxTemplates.candidateSection}
+${ctxTemplates.resumeLabel}
+${context.resumeData.summary}
+`;
+  }
+
+  if (context?.jobContext && (context.jobContext.companyName || context.jobContext.jobTitle || context.jobContext.jobDescription)) {
+    contextSection += `
+${ctxTemplates.targetPosition}
+${context.jobContext.companyName ? `${ctxTemplates.companyLabel} ${context.jobContext.companyName}` : ''}
+${context.jobContext.jobTitle ? `${ctxTemplates.roleLabel} ${context.jobContext.jobTitle}` : ''}
+${context.jobContext.jobDescription ? `${ctxTemplates.descriptionLabel}\n${context.jobContext.jobDescription.slice(0, 1500)}` : ''}
+
+${ctxTemplates.instruction}
+`;
+  }
 
   return `
 ${config.intro(interviewerName, positionLabel, difficultyLabel, stackLabels)}
@@ -223,7 +286,7 @@ ${config.persona(interviewerName, positionLabel)}
 ${config.scope(stackLabels)}
 
 ${hasExtendedTopics ? config.extendedTopics(softSkillLabels, businessTopicLabels, modernPracticeLabels) : ''}
-
+${contextSection}
 ${config.structure(hasExtendedTopics)}
 
 ## ${language === 'en' ? 'QUESTION GUIDELINES' : language === 'pt' ? 'DIRETRIZES DE PERGUNTAS' : 'DIRECTRICES DE PREGUNTAS'} - ${difficultyLabel.toUpperCase()}

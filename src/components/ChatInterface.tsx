@@ -2,13 +2,15 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from './ui/Button';
-import { Send, User, Bot, Loader2, AlertCircle, LogOut, Sparkles, Clock, MessageSquare, Mic, MicOff, Copy, Check, RotateCcw, Settings } from 'lucide-react';
+import { Send, User, Bot, Loader2, AlertCircle, LogOut, Sparkles, Clock, MessageSquare, Mic, MicOff, Copy, Check, RotateCcw, Settings, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInterview } from '@/hooks/useInterview';
 import { useAppStore } from '@/lib/store';
 import ReactMarkdown from 'react-markdown';
 import { InterviewTimer } from './InterviewTimer';
 import { clsx } from 'clsx';
+import { VoiceChat } from './VoiceChat';
+import { AI_MODELS, isSpeechRecognitionSupported } from '@/lib/voice';
 
 interface ChatInterfaceProps {
     onOpenSettings: () => void;
@@ -16,13 +18,19 @@ interface ChatInterfaceProps {
 
 export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
     const { messages, isLoading, error, sendMessage, finishInterview } = useInterview();
-    const { resetSession, t, userProfile } = useAppStore();
+    const { resetSession, t, userProfile, voiceEnabled, setVoiceEnabled, selectedModel, setSelectedModel, getActiveKey } = useAppStore();
     const [input, setInput] = useState('');
     const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const [isFinishing, setIsFinishing] = useState(false);
     const [showEndConfirm, setShowEndConfirm] = useState(false);
+    const [showModelSelector, setShowModelSelector] = useState(false);
+
+    const activeKey = getActiveKey();
+    const provider = activeKey?.provider || 'openai';
+    const availableModels = AI_MODELS[provider as keyof typeof AI_MODELS] || [];
+    const supportsVoice = isSpeechRecognitionSupported();
 
     const scrollToBottom = useCallback(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -90,6 +98,65 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
                 </div>
                 <div className="flex items-center gap-2 md:gap-3">
                     <InterviewTimer />
+
+                    {/* Model Selector */}
+                    <div className="relative hidden md:block">
+                        <button
+                            onClick={() => setShowModelSelector(!showModelSelector)}
+                            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 rounded-lg text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
+                        >
+                            <span className="max-w-[80px] truncate">
+                                {availableModels.find(m => m.id === selectedModel)?.name || 'Model'}
+                            </span>
+                            <ChevronDown className="w-3 h-3" />
+                        </button>
+                        <AnimatePresence>
+                            {showModelSelector && (
+                                <>
+                                    <div className="fixed inset-0 z-40" onClick={() => setShowModelSelector(false)} />
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -10 }}
+                                        className="absolute right-0 top-full mt-2 w-64 bg-neutral-900 border border-neutral-800 rounded-xl p-2 shadow-xl z-50"
+                                    >
+                                        <p className="text-xs text-neutral-500 px-2 py-1">
+                                            {provider.toUpperCase()} Models
+                                        </p>
+                                        {availableModels.map((model) => (
+                                            <button
+                                                key={model.id}
+                                                onClick={() => {
+                                                    setSelectedModel(model.id);
+                                                    setShowModelSelector(false);
+                                                }}
+                                                className={clsx(
+                                                    "w-full flex flex-col items-start px-3 py-2 rounded-lg text-left transition-colors",
+                                                    selectedModel === model.id
+                                                        ? "bg-white/10 text-white"
+                                                        : "text-neutral-300 hover:bg-neutral-800"
+                                                )}
+                                            >
+                                                <span className="text-sm font-medium">{model.name}</span>
+                                                <span className="text-xs text-neutral-500">{model.description}</span>
+                                            </button>
+                                        ))}
+                                    </motion.div>
+                                </>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
+                    {/* Voice Mode Toggle */}
+                    {supportsVoice && (
+                        <button
+                            onClick={() => setVoiceEnabled(true)}
+                            className="p-2 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-400 hover:text-neutral-200 transition-colors"
+                            title="Voice Mode"
+                        >
+                            <Mic className="w-4 h-4" />
+                        </button>
+                    )}
 
                     {/* Settings Button */}
                     <button
@@ -342,6 +409,15 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
                     </p>
                 </div>
             </div>
+
+            {/* Voice Chat Overlay */}
+            <VoiceChat
+                isOpen={voiceEnabled}
+                onClose={() => setVoiceEnabled(false)}
+                onSendMessage={sendMessage}
+                lastAiMessage={messages.filter(m => m.role === 'assistant').pop()?.content}
+                isAiResponding={isLoading}
+            />
         </div>
     );
 }

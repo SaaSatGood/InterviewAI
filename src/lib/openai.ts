@@ -6,6 +6,7 @@ export interface ChatConfig {
     provider: Provider;
     messages: Message[];
     systemPrompt?: string;
+    model?: string; // Optional: allows dynamic model selection
 }
 
 // OpenAI Chat Completion
@@ -24,7 +25,7 @@ async function sendOpenAIRequest(config: ChatConfig): Promise<string> {
             'Authorization': `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-            model: 'gpt-4-turbo-preview',
+            model: config.model || 'gpt-4-turbo-preview',
             messages: conversation,
             temperature: 0.7,
         }),
@@ -70,7 +71,7 @@ async function sendGeminiRequest(config: ChatConfig): Promise<string> {
     const systemInstruction = systemPrompt ? { parts: [{ text: systemPrompt }] } : undefined;
 
     const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${config.model || 'gemini-2.5-flash'}:generateContent?key=${apiKey}`,
         {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -173,7 +174,7 @@ async function sendAnthropicRequest(config: ChatConfig): Promise<string> {
             'anthropic-version': '2023-06-01',
         },
         body: JSON.stringify({
-            model: 'claude-3-sonnet-20240229',
+            model: config.model || 'claude-3-sonnet-20240229',
             max_tokens: 2048,
             system: systemPrompt || '',
             messages: messages.map(msg => ({

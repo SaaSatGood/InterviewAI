@@ -105,6 +105,20 @@ export const translations: Record<Language, Record<string, string>> = {
         'common.close': 'Close',
         'common.save': 'Save',
         'common.cancel': 'Cancel',
+
+        // Voice Mode
+        'voice.modeVoice': 'Voice Mode',
+        'voice.modeText': 'Text Mode',
+        'voice.listening': 'Listening...',
+        'voice.speaking': 'Speaking...',
+        'voice.processing': 'Processing...',
+        'voice.tapToSpeak': 'Tap to speak',
+        'voice.micPermission': 'Microphone permission required',
+        'voice.browserNotSupported': 'Voice not supported in this browser',
+        'voice.selectModel': 'Select Model',
+        'voice.switchToText': 'Switch to Text',
+        'voice.muteAI': 'Mute AI',
+        'voice.unmuteAI': 'Unmute AI',
     },
     pt: {
         // Landing Page
@@ -203,6 +217,20 @@ export const translations: Record<Language, Record<string, string>> = {
         'common.close': 'Fechar',
         'common.save': 'Salvar',
         'common.cancel': 'Cancelar',
+
+        // Voice Mode
+        'voice.modeVoice': 'Modo Voz',
+        'voice.modeText': 'Modo Texto',
+        'voice.listening': 'Ouvindo...',
+        'voice.speaking': 'Falando...',
+        'voice.processing': 'Processando...',
+        'voice.tapToSpeak': 'Toque para falar',
+        'voice.micPermission': 'Permissão de microfone necessária',
+        'voice.browserNotSupported': 'Voz não suportada neste navegador',
+        'voice.selectModel': 'Selecionar Modelo',
+        'voice.switchToText': 'Mudar para Texto',
+        'voice.muteAI': 'Silenciar IA',
+        'voice.unmuteAI': 'Ativar som da IA',
     },
     es: {
         // Landing Page
@@ -301,6 +329,20 @@ export const translations: Record<Language, Record<string, string>> = {
         'common.close': 'Cerrar',
         'common.save': 'Guardar',
         'common.cancel': 'Cancelar',
+
+        // Voice Mode
+        'voice.modeVoice': 'Modo Voz',
+        'voice.modeText': 'Modo Texto',
+        'voice.listening': 'Escuchando...',
+        'voice.speaking': 'Hablando...',
+        'voice.processing': 'Procesando...',
+        'voice.tapToSpeak': 'Toca para hablar',
+        'voice.micPermission': 'Se requiere permiso de micrófono',
+        'voice.browserNotSupported': 'Voz no compatible en este navegador',
+        'voice.selectModel': 'Seleccionar Modelo',
+        'voice.switchToText': 'Cambiar a Texto',
+        'voice.muteAI': 'Silenciar IA',
+        'voice.unmuteAI': 'Activar sonido de IA',
     },
 };
 

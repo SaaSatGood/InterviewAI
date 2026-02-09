@@ -29,6 +29,26 @@ export interface UserProfile {
   modernPractices: string[];
 }
 
+export interface VoiceSettings {
+  autoSpeak: boolean;
+  voiceId: string;
+  speed: number;
+}
+
+export interface ResumeData {
+  fullText: string;
+  summary: string;
+  fileName: string;
+  extractedAt: string;
+}
+
+export interface JobContext {
+  companyName: string;
+  jobTitle: string;
+  jobDescription: string;
+  companyUrl: string;
+}
+
 interface AppState {
   // Internationalization
   language: Language;
@@ -53,6 +73,20 @@ interface AppState {
   setUserProfile: (profile: UserProfile | null) => void;
   setReport: (report: InterviewReport | null) => void;
 
+  // Voice Settings
+  voiceEnabled: boolean;
+  selectedModel: string;
+  voiceSettings: VoiceSettings;
+  setVoiceEnabled: (enabled: boolean) => void;
+  setSelectedModel: (model: string) => void;
+  setVoiceSettings: (settings: Partial<VoiceSettings>) => void;
+
+  // Resume & Job Context
+  resumeData: ResumeData | null;
+  jobContext: JobContext | null;
+  setResumeData: (data: ResumeData | null) => void;
+  setJobContext: (context: JobContext | null) => void;
+
   isConfigured: () => boolean;
   resetSession: () => void;
 }
@@ -73,6 +107,19 @@ export const useAppStore = create<AppState>()(
       activeKeyId: null,
       userProfile: null,
       report: null,
+
+      // Voice settings
+      voiceEnabled: false,
+      selectedModel: '',
+      voiceSettings: {
+        autoSpeak: true,
+        voiceId: '',
+        speed: 1.0,
+      },
+
+      // Resume & Job Context
+      resumeData: null,
+      jobContext: null,
 
       addApiKey: (name: string, key: string, provider: Provider) => {
         const newKey: ApiKey = {
@@ -111,6 +158,17 @@ export const useAppStore = create<AppState>()(
       setUserProfile: (userProfile: UserProfile | null) => set({ userProfile, report: null }),
       setReport: (report: InterviewReport | null) => set({ report }),
 
+      // Voice actions
+      setVoiceEnabled: (voiceEnabled: boolean) => set({ voiceEnabled }),
+      setSelectedModel: (selectedModel: string) => set({ selectedModel }),
+      setVoiceSettings: (settings: Partial<VoiceSettings>) => set((state) => ({
+        voiceSettings: { ...state.voiceSettings, ...settings }
+      })),
+
+      // Resume & Job Context actions
+      setResumeData: (resumeData: ResumeData | null) => set({ resumeData }),
+      setJobContext: (jobContext: JobContext | null) => set({ jobContext }),
+
       isConfigured: () => {
         const state = get();
         return state.apiKeys.length > 0 && state.activeKeyId !== null;
@@ -124,6 +182,10 @@ export const useAppStore = create<AppState>()(
         apiKeys: state.apiKeys,
         activeKeyId: state.activeKeyId,
         language: state.language,
+        selectedModel: state.selectedModel,
+        voiceSettings: state.voiceSettings,
+        resumeData: state.resumeData,
+        jobContext: state.jobContext,
       }),
       onRehydrateStorage: () => (state) => {
         // Auto-detect language on first visit if not set

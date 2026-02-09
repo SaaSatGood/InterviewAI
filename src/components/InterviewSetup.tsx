@@ -10,9 +10,11 @@ import {
     ChevronRight, ChevronLeft, Code2, Briefcase, GraduationCap, Search, Sparkles,
     Layout, Server, Layers, Smartphone, Cloud, Database, Brain, TestTube, Shield,
     Activity, Building, Gamepad, Link, Rocket, Users, Target, Zap, Star,
-    Gift, CreditCard, ArrowRight, Globe, Check, Heart, TrendingUp, Wrench, CheckCircle2
+    Gift, CreditCard, ArrowRight, Globe, Check, Heart, TrendingUp, Wrench, CheckCircle2, FileText
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { ResumeUpload } from './ResumeUpload';
+import { JobContext } from './JobContext';
 
 // Icon mapping for positions
 const POSITION_ICONS: Record<string, React.ElementType> = {
@@ -304,11 +306,11 @@ export function InterviewSetup({ onOpenApiKeyModal }: InterviewSetupProps) {
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-lg font-semibold text-white">{t('setup.title')}</h1>
-                            <p className="text-sm text-neutral-500">{t('setup.step')} {step} {t('setup.of')} 4</p>
+                            <p className="text-sm text-neutral-500">{t('setup.step')} {step} {t('setup.of')} 5</p>
                         </div>
                         <div className="flex gap-1">
-                            {[1, 2, 3, 4].map(s => (
-                                <div key={s} className={clsx("w-8 h-1 rounded-full transition-colors", s <= step ? "bg-white" : "bg-neutral-800")} />
+                            {[1, 2, 3, 4, 5].map(s => (
+                                <div key={s} className={clsx("w-6 h-1 rounded-full transition-colors", s <= step ? "bg-white" : "bg-neutral-800")} />
                             ))}
                         </div>
                     </div>
@@ -571,7 +573,36 @@ export function InterviewSetup({ onOpenApiKeyModal }: InterviewSetupProps) {
 
                                 <div className="flex justify-between pt-3">
                                     <Button variant="ghost" onClick={() => setStep(3)}><ChevronLeft className="mr-1 w-4 h-4" /> {t('setup.back')}</Button>
-                                    <Button onClick={handleStart} disabled={!selectedDifficulty}>{t('setup.start')} <ArrowRight className="ml-2 w-4 h-4" /></Button>
+                                    <Button onClick={() => setStep(5)} disabled={!selectedDifficulty}>{t('setup.next')} <ChevronRight className="ml-1 w-4 h-4" /></Button>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {/* Step 5: Resume & Job Context */}
+                        {step === 5 && (
+                            <motion.div key="step5" variants={fadeIn} initial="hidden" animate="visible" exit="exit" className="space-y-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-neutral-800 rounded-lg"><FileText className="w-5 h-5 text-neutral-400" /></div>
+                                    <div>
+                                        <h2 className="text-base font-medium text-white">
+                                            {language === 'pt' ? 'Personalize sua Entrevista' : language === 'es' ? 'Personaliza tu Entrevista' : 'Personalize Your Interview'}
+                                        </h2>
+                                        <p className="text-xs text-neutral-500">
+                                            {language === 'pt' ? 'Opcional - adicione seu currículo e vaga alvo' : language === 'es' ? 'Opcional - agrega tu CV y puesto objetivo' : 'Optional - add your resume and target position'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-5 max-h-[400px] overflow-y-auto pr-2">
+                                    <ResumeUpload />
+                                    <div className="border-t border-neutral-800 pt-5">
+                                        <JobContext />
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-between pt-3">
+                                    <Button variant="ghost" onClick={() => setStep(4)}><ChevronLeft className="mr-1 w-4 h-4" /> {t('setup.back')}</Button>
+                                    <Button onClick={handleStart}>{t('setup.start')} <ArrowRight className="ml-2 w-4 h-4" /></Button>
                                 </div>
                             </motion.div>
                         )}

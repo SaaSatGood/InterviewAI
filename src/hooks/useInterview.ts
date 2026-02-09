@@ -5,7 +5,7 @@ import { generateSystemPrompt, generateReportPrompt } from '@/lib/prompts';
 import { Message } from '@/types';
 
 export function useInterview() {
-    const { getActiveKey, userProfile, language } = useAppStore();
+    const { getActiveKey, userProfile, language, resumeData, jobContext } = useAppStore();
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -25,7 +25,10 @@ export function useInterview() {
         setError(null);
 
         try {
-            const systemPrompt = generateSystemPrompt(userProfile, language);
+            const systemPrompt = generateSystemPrompt(userProfile, language, {
+                resumeData,
+                jobContext,
+            });
 
             const responseContent = await sendChatRequest({
                 apiKey: activeKey.key,
@@ -41,7 +44,7 @@ export function useInterview() {
         } finally {
             setIsLoading(false);
         }
-    }, [activeKey, userProfile, messages, language]);
+    }, [activeKey, userProfile, messages, language, resumeData, jobContext]);
 
     // Initial greeting
     useEffect(() => {
@@ -55,7 +58,10 @@ export function useInterview() {
                         apiKey: activeKey.key,
                         provider: activeKey.provider,
                         messages: [{ role: 'user', content: "Please introduce yourself and start the interview." }],
-                        systemPrompt: generateSystemPrompt(userProfile, language)
+                        systemPrompt: generateSystemPrompt(userProfile, language, {
+                            resumeData,
+                            jobContext,
+                        })
                     });
 
                     setMessages([{ role: 'assistant', content: responseContent }]);
@@ -68,7 +74,7 @@ export function useInterview() {
 
             startInterview();
         }
-    }, [activeKey, userProfile, language]);
+    }, [activeKey, userProfile, language, resumeData, jobContext]);
 
     const finishInterview = async () => {
         if (!activeKey || !userProfile || messages.length === 0) return;

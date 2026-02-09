@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAppStore } from '@/lib/store';
+import { ClientOnly } from '@/components/ClientOnly';
 import { ApiKeyManager } from '@/components/ApiKeyManager';
 import { InterviewSetup } from '@/components/InterviewSetup';
 import { ChatInterface } from '@/components/ChatInterface';
@@ -12,19 +13,21 @@ export default function Home() {
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
 
   return (
-    <main className="relative bg-neutral-950 min-h-screen">
-      <ApiKeyManager
-        isOpen={isApiKeyModalOpen}
-        onClose={() => setIsApiKeyModalOpen(false)}
-      />
+    <ClientOnly>
+      <main className="relative bg-neutral-950 min-h-screen">
+        <ApiKeyManager
+          isOpen={isApiKeyModalOpen}
+          onClose={() => setIsApiKeyModalOpen(false)}
+        />
 
-      {report ? (
-        <InterviewReport onOpenSettings={() => setIsApiKeyModalOpen(true)} />
-      ) : !userProfile ? (
-        <InterviewSetup onOpenApiKeyModal={() => setIsApiKeyModalOpen(true)} />
-      ) : (
-        <ChatInterface onOpenSettings={() => setIsApiKeyModalOpen(true)} />
-      )}
-    </main>
+        {report ? (
+          <InterviewReport onOpenSettings={() => setIsApiKeyModalOpen(true)} />
+        ) : !userProfile ? (
+          <InterviewSetup onOpenApiKeyModal={() => setIsApiKeyModalOpen(true)} />
+        ) : (
+          <ChatInterface onOpenSettings={() => setIsApiKeyModalOpen(true)} />
+        )}
+      </main>
+    </ClientOnly>
   );
 }

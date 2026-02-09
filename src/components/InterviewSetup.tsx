@@ -203,9 +203,54 @@ export function InterviewSetup({ onOpenApiKeyModal }: InterviewSetupProps) {
 
                     {/* CTA */}
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }} className="mb-12">
-                        <Button onClick={handleStartInterview} size="lg" className="px-8">
-                            {t('landing.cta')} <ArrowRight className="ml-2 w-4 h-4" />
-                        </Button>
+                        <motion.div
+                            className="relative inline-block"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.98 }}
+                        >
+                            {/* Glow effect behind button */}
+                            <motion.div
+                                className="absolute inset-0 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-cyan-500 rounded-lg blur-lg opacity-50"
+                                animate={{
+                                    opacity: [0.4, 0.7, 0.4],
+                                    scale: [1, 1.05, 1],
+                                }}
+                                transition={{
+                                    duration: 2,
+                                    repeat: Infinity,
+                                    ease: "easeInOut",
+                                }}
+                            />
+                            <Button
+                                onClick={handleStartInterview}
+                                size="lg"
+                                className="relative px-8 overflow-hidden group bg-gradient-to-r from-white to-neutral-100 hover:from-neutral-100 hover:to-white"
+                            >
+                                {/* Shine effect */}
+                                <motion.div
+                                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12"
+                                    animate={{ x: ['-200%', '200%'] }}
+                                    transition={{
+                                        duration: 3,
+                                        repeat: Infinity,
+                                        repeatDelay: 2,
+                                        ease: "easeInOut",
+                                    }}
+                                />
+                                <span className="relative">{t('landing.cta')}</span>
+                                <motion.span
+                                    className="relative ml-2"
+                                    animate={{ x: [0, 4, 0] }}
+                                    transition={{
+                                        duration: 1.5,
+                                        repeat: Infinity,
+                                        ease: "easeInOut",
+                                    }}
+                                >
+                                    <ArrowRight className="w-4 h-4" />
+                                </motion.span>
+                            </Button>
+                        </motion.div>
                         <p className="mt-3 text-xs text-neutral-600">
                             {language === 'pt' ? 'Comece em segundos' : language === 'es' ? 'Comienza en segundos' : 'Start in seconds'}
                         </p>

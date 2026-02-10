@@ -7,10 +7,12 @@ import { ApiKeyManager } from '@/components/ApiKeyManager';
 import { InterviewSetup } from '@/components/InterviewSetup';
 import { ChatInterface } from '@/components/ChatInterface';
 import { InterviewReport } from '@/components/InterviewReport';
+import { LiveCoach } from '@/components/LiveCoach';
 
 export default function Home() {
   const { userProfile, report } = useAppStore();
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
+  const [isLiveCoach, setIsLiveCoach] = useState(false);
 
   return (
     <ClientOnly>
@@ -20,10 +22,18 @@ export default function Home() {
           onClose={() => setIsApiKeyModalOpen(false)}
         />
 
-        {report ? (
+        {isLiveCoach ? (
+          <LiveCoach
+            onBack={() => setIsLiveCoach(false)}
+            onOpenApiKeyModal={() => setIsApiKeyModalOpen(true)}
+          />
+        ) : report ? (
           <InterviewReport onOpenSettings={() => setIsApiKeyModalOpen(true)} />
         ) : !userProfile ? (
-          <InterviewSetup onOpenApiKeyModal={() => setIsApiKeyModalOpen(true)} />
+          <InterviewSetup
+            onOpenApiKeyModal={() => setIsApiKeyModalOpen(true)}
+            onOpenLiveCoach={() => setIsLiveCoach(true)}
+          />
         ) : (
           <ChatInterface onOpenSettings={() => setIsApiKeyModalOpen(true)} />
         )}

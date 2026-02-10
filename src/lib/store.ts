@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { InterviewReport } from '@/types';
+import { InterviewReport, InterviewHistoryEntry } from '@/types';
 import { Language, detectBrowserLanguage, translations } from './i18n';
 
 export type Provider = 'openai' | 'gemini' | 'azure' | 'anthropic';
@@ -40,6 +40,7 @@ export interface ResumeData {
   summary: string;
   fileName: string;
   extractedAt: string;
+  originalName?: string;
 }
 
 export interface JobContext {
@@ -72,6 +73,13 @@ interface AppState {
   report: InterviewReport | null;
   setUserProfile: (profile: UserProfile | null) => void;
   setReport: (report: InterviewReport | null) => void;
+
+  // History & Last Session
+  history: InterviewHistoryEntry[];
+  lastProfile: UserProfile | null;
+  addToHistory: (entry: InterviewHistoryEntry) => void;
+  clearHistory: () => void;
+  setLastProfile: (profile: UserProfile | null) => void;
 
   // Voice Settings
   voiceEnabled: boolean;
@@ -107,6 +115,15 @@ export const useAppStore = create<AppState>()(
       activeKeyId: null,
       userProfile: null,
       report: null,
+
+      // History & Last Session
+      history: [],
+      lastProfile: null,
+      addToHistory: (entry: InterviewHistoryEntry) => set((state) => ({
+        history: [entry, ...state.history]
+      })),
+      clearHistory: () => set({ history: [] }),
+      setLastProfile: (profile: UserProfile | null) => set({ lastProfile: profile }),
 
       // Voice settings
       voiceEnabled: false,
@@ -186,11 +203,17 @@ export const useAppStore = create<AppState>()(
         voiceSettings: state.voiceSettings,
         resumeData: state.resumeData,
         jobContext: state.jobContext,
+        history: state.history,
+        lastProfile: state.lastProfile,
       }),
       onRehydrateStorage: () => (state) => {
         // Auto-detect language on first visit if not set
         if (state && !state.language) {
-          state.setLanguage(detectBrowserLanguage());
+          // @ts-ignore
+          const browserLang = detectBrowserLanguage();
+          if (!state.language) {
+            state.setLanguage(browserLang);
+          }
         }
       },
     }

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from './ui/Button';
-import { Send, User, Bot, Loader2, AlertCircle, LogOut, Sparkles, Clock, MessageSquare, Mic, MicOff, Copy, Check, RotateCcw, Settings, ChevronDown } from 'lucide-react';
+import { Send, User, Bot, Loader2, AlertCircle, LogOut, Sparkles, Clock, MessageSquare, Mic, MicOff, Copy, Check, RotateCcw, Settings, ChevronDown, SkipForward } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInterview } from '@/hooks/useInterview';
 import { useAppStore } from '@/lib/store';
@@ -64,6 +64,11 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
         }
     };
 
+    const handleSkip = () => {
+        if (isLoading) return;
+        sendMessage("I would like to skip this question. Please provide the answer and move to the next one.");
+    };
+
     const handleFinish = async () => {
         setShowEndConfirm(false);
         setIsFinishing(true);
@@ -92,7 +97,7 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
                         <span className="text-base font-semibold text-white">Interview<span className="text-neutral-500">AI</span></span>
                         <p className="text-xs text-neutral-500 hidden md:flex items-center gap-2">
                             <MessageSquare className="w-3 h-3" />
-                            {questionsAsked} questions · {userResponses} responses
+                            {questionsAsked} {t('chat.questions')} · {userResponses} {t('chat.responses')}
                         </p>
                     </div>
                 </div>
@@ -103,10 +108,11 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
                     <div className="relative hidden md:block">
                         <button
                             onClick={() => setShowModelSelector(!showModelSelector)}
+                            aria-label={t('voice.selectModel')}
                             className="flex items-center gap-1.5 px-2.5 py-1.5 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 rounded-lg text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
                         >
                             <span className="max-w-[80px] truncate">
-                                {availableModels.find(m => m.id === selectedModel)?.name || 'Model'}
+                                {availableModels.find(m => m.id === selectedModel)?.name || t('voice.selectModel')}
                             </span>
                             <ChevronDown className="w-3 h-3" />
                         </button>
@@ -151,8 +157,9 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
                     {supportsVoice && (
                         <button
                             onClick={() => setVoiceEnabled(true)}
+                            aria-label={t('voice.modeVoice')}
                             className="p-2 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-400 hover:text-neutral-200 transition-colors"
-                            title="Voice Mode"
+                            title={t('voice.modeVoice')}
                         >
                             <Mic className="w-4 h-4" />
                         </button>
@@ -161,8 +168,9 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
                     {/* Settings Button */}
                     <button
                         onClick={onOpenSettings}
+                        aria-label={t('coach.manageKeys')}
                         className="p-2 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-400 hover:text-neutral-200 transition-colors"
-                        title="Manage API Keys"
+                        title={t('coach.manageKeys')}
                     >
                         <Settings className="w-4 h-4" />
                     </button>
@@ -230,7 +238,7 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
                 >
                     <div className="bg-neutral-900/50 border border-neutral-800 rounded-lg px-4 py-3 text-center">
                         <p className="text-xs text-neutral-500">
-                            {t('chat.interviewingFor') || 'Interviewing for'}{' '}
+                            {t('chat.interviewingFor')}{' '}
                             <span className="text-neutral-300 font-medium">{userProfile.level}</span>{' '}
                             <span className="text-neutral-200">{userProfile.position}</span>{' '}
                             <span className="text-neutral-500">·</span>{' '}
@@ -305,7 +313,10 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
                                     {msg.role === 'assistant' && (
                                         <div className="mt-2 flex items-center gap-1 text-[10px] text-neutral-600">
                                             <Clock className="w-2.5 h-2.5" />
-                                            {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            {msg.timestamp
+                                                ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                                : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                            }
                                         </div>
                                     )}
                                 </div>
@@ -398,15 +409,28 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
                             <Button
                                 onClick={handleSend}
                                 disabled={isLoading || !input.trim()}
+                                aria-label={t('chat.send')}
                                 className="h-12 w-12 p-0 rounded-xl"
                             >
                                 <Send className="w-5 h-5" />
                             </Button>
                         </motion.div>
                     </div>
-                    <p className="text-[10px] text-neutral-600 mt-2 text-center">
-                        Press <kbd className="px-1.5 py-0.5 bg-neutral-800 rounded text-neutral-400 font-mono">Enter</kbd> to send · <kbd className="px-1.5 py-0.5 bg-neutral-800 rounded text-neutral-400 font-mono">Shift+Enter</kbd> for new line
-                    </p>
+
+                    <div className="flex items-center justify-between mt-2">
+                        <button
+                            onClick={handleSkip}
+                            disabled={isLoading}
+                            className="text-[10px] text-neutral-500 hover:text-neutral-300 transition-colors flex items-center gap-1"
+                        >
+                            <SkipForward className="w-3 h-3" />
+                            {t('chat.skipQuestion')}
+                        </button>
+
+                        <p className="text-[10px] text-neutral-600 text-center">
+                            <kbd className="px-1 py-0.5 bg-neutral-800 rounded text-neutral-400 font-mono">Enter</kbd> {t('chat.enterToSend')} · <kbd className="px-1 py-0.5 bg-neutral-800 rounded text-neutral-400 font-mono">Shift+Enter</kbd> {t('chat.shiftEnterNewLine')}
+                        </p>
+                    </div>
                 </div>
             </div>
 

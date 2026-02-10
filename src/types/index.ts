@@ -1,6 +1,7 @@
 export interface Message {
     role: 'system' | 'user' | 'assistant';
     content: string;
+    timestamp?: number;
 }
 
 export interface QuestionAnalysis {
@@ -34,9 +35,19 @@ export interface InterviewReport {
     nextInterviewTips?: string[];
 }
 
+export interface InterviewHistoryEntry {
+    id: string;
+    date: number;
+    position: string;
+    stacks: string[];
+    level: string;
+    score: number;
+    hiringDecision?: string;
+    report: InterviewReport;
+}
+
 export interface InterviewState {
     messages: Message[];
     isLoading: boolean;
     error: string | null;
 }
-

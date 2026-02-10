@@ -10,7 +10,7 @@ import {
     ChevronRight, ChevronLeft, Code2, Briefcase, GraduationCap, Search, Sparkles,
     Layout, Server, Layers, Smartphone, Cloud, Database, Brain, TestTube, Shield,
     Activity, Building, Gamepad, Link, Rocket, Users, Target, Zap, Star,
-    Gift, CreditCard, ArrowRight, Globe, Check, Heart, TrendingUp, Wrench, CheckCircle2, FileText
+    Gift, CreditCard, ArrowRight, Globe, Check, Heart, TrendingUp, Wrench, CheckCircle2, FileText, Headphones, History as HistoryIcon
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { ResumeUpload } from './ResumeUpload';
@@ -36,10 +36,11 @@ const POSITION_ICONS: Record<string, React.ElementType> = {
 
 interface InterviewSetupProps {
     onOpenApiKeyModal: () => void;
+    onOpenLiveCoach?: () => void;
 }
 
-export function InterviewSetup({ onOpenApiKeyModal }: InterviewSetupProps) {
-    const { setUserProfile, language, setLanguage, t, isConfigured } = useAppStore();
+export function InterviewSetup({ onOpenApiKeyModal, onOpenLiveCoach }: InterviewSetupProps) {
+    const { setUserProfile, language, setLanguage, t, isConfigured, lastProfile, setLastProfile } = useAppStore();
     const [step, setStep] = useState(0);
     const [selectedPosition, setSelectedPosition] = useState('');
     const [selectedStacks, setSelectedStacks] = useState<string[]>([]);
@@ -58,14 +59,43 @@ export function InterviewSetup({ onOpenApiKeyModal }: InterviewSetupProps) {
 
     const handleStart = () => {
         if (selectedPosition && selectedStacks.length > 0 && selectedDifficulty) {
-            setUserProfile({
+            const profile = {
                 position: selectedPosition,
                 stacks: selectedStacks,
                 level: selectedDifficulty,
                 softSkills: selectedSoftSkills,
                 businessTopics: selectedBusinessTopics,
                 modernPractices: selectedModernPractices,
-            });
+            };
+            setLastProfile(profile);
+            setUserProfile(profile);
+        }
+    };
+
+    const handleQuickStart = () => {
+        if (!isConfigured()) {
+            onOpenApiKeyModal();
+            return;
+        }
+        const quickProfile = {
+            position: 'fullstack',
+            stacks: ['react', 'node'],
+            level: 'mid-level',
+            softSkills: ['communication', 'problem-solving'],
+            businessTopics: [],
+            modernPractices: ['agile', 'clean-code'],
+        };
+        setLastProfile(quickProfile);
+        setUserProfile(quickProfile);
+    };
+
+    const handleRepeatLast = () => {
+        if (!isConfigured()) {
+            onOpenApiKeyModal();
+            return;
+        }
+        if (lastProfile) {
+            setUserProfile(lastProfile);
         }
     };
 
@@ -256,6 +286,59 @@ export function InterviewSetup({ onOpenApiKeyModal }: InterviewSetupProps) {
                         <p className="mt-3 text-xs text-neutral-600">
                             {language === 'pt' ? 'Comece em segundos' : language === 'es' ? 'Comienza en segundos' : 'Start in seconds'}
                         </p>
+
+                        {/* Quick Start & Repeat Last */}
+                        <div className="mt-8 flex flex-col items-center gap-3">
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.4 }}
+                                className="flex flex-wrap justify-center gap-3"
+                            >
+                                <button
+                                    onClick={handleQuickStart}
+                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-900/30 border border-emerald-800 hovered:border-emerald-500 text-emerald-400 hover:text-emerald-300 transition-colors text-sm font-medium"
+                                >
+                                    <Zap className="w-4 h-4" />
+                                    {t('landing.quickStart')}
+                                </button>
+
+                                {lastProfile && (
+                                    <button
+                                        onClick={handleRepeatLast}
+                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-neutral-900 border border-neutral-800 hover:border-neutral-700 text-neutral-400 hover:text-white transition-colors text-sm font-medium"
+                                    >
+                                        <HistoryIcon className="w-4 h-4" />
+                                        {t('landing.repeatLast')}
+                                    </button>
+                                )}
+                            </motion.div>
+
+                            <motion.p
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.45 }}
+                                className="text-xs text-neutral-600"
+                            >
+                                {t('landing.quickStartDesc')}
+                            </motion.p>
+                        </div>
+
+                        {/* Live Coach Button */}
+                        {onOpenLiveCoach && (
+                            <motion.button
+                                onClick={onOpenLiveCoach}
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.97 }}
+                                className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 hover:border-emerald-500/30 text-neutral-300 hover:text-emerald-400 transition-all group"
+                            >
+                                <Headphones className="w-4 h-4 text-emerald-500 group-hover:animate-pulse" />
+                                <span className="text-sm font-medium">
+                                    {t('landing.liveCoach')}
+                                </span>
+                                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold">NEW</span>
+                            </motion.button>
+                        )}
                     </motion.div>
 
                     {/* Features */}
@@ -374,10 +457,10 @@ export function InterviewSetup({ onOpenApiKeyModal }: InterviewSetupProps) {
                                         <div className="p-2 bg-neutral-800 rounded-lg"><Code2 className="w-5 h-5 text-neutral-400" /></div>
                                         <div>
                                             <h2 className="text-base font-medium text-white">{t('setup.selectStack')}</h2>
-                                            <p className="text-xs text-neutral-500">{language === 'pt' ? 'Selecione várias tecnologias' : language === 'es' ? 'Selecciona varias tecnologías' : 'Select multiple technologies'}</p>
+                                            <p className="text-xs text-neutral-500">{t('setup.selectMultiple')}</p>
                                         </div>
                                     </div>
-                                    <span className="text-xs text-neutral-400 bg-neutral-800 px-2 py-1 rounded">{selectedStacks.length} selected</span>
+                                    <span className="text-xs text-neutral-400 bg-neutral-800 px-2 py-1 rounded">{selectedStacks.length} {t('setup.selected')}</span>
                                 </div>
 
                                 <div className="relative">
@@ -426,8 +509,8 @@ export function InterviewSetup({ onOpenApiKeyModal }: InterviewSetupProps) {
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 bg-neutral-800 rounded-lg"><Heart className="w-5 h-5 text-neutral-400" /></div>
                                     <div>
-                                        <h2 className="text-base font-medium text-white">{language === 'pt' ? 'Competências Complementares' : language === 'es' ? 'Competencias Complementarias' : 'Complementary Skills'}</h2>
-                                        <p className="text-xs text-neutral-500">{language === 'pt' ? 'Opcional - para entrevista completa' : language === 'es' ? 'Opcional - para entrevista completa' : 'Optional - for complete interview'}</p>
+                                        <h2 className="text-base font-medium text-white">{t('setup.complementarySkills')}</h2>
+                                        <p className="text-xs text-neutral-500">{t('setup.complementaryDesc')}</p>
                                     </div>
                                 </div>
 
@@ -436,7 +519,7 @@ export function InterviewSetup({ onOpenApiKeyModal }: InterviewSetupProps) {
                                     <div>
                                         <div className="flex items-center gap-2 mb-2">
                                             <Users className="w-4 h-4 text-neutral-500" />
-                                            <span className="text-sm font-medium text-neutral-300">Soft Skills</span>
+                                            <span className="text-sm font-medium text-neutral-300">{t('setup.softSkills')}</span>
                                             <span className="text-xs text-neutral-500">({selectedSoftSkills.length})</span>
                                         </div>
                                         <div className="grid grid-cols-2 gap-2">
@@ -464,7 +547,7 @@ export function InterviewSetup({ onOpenApiKeyModal }: InterviewSetupProps) {
                                     <div>
                                         <div className="flex items-center gap-2 mb-2">
                                             <TrendingUp className="w-4 h-4 text-neutral-500" />
-                                            <span className="text-sm font-medium text-neutral-300">{language === 'pt' ? 'Lógica de Negócios' : language === 'es' ? 'Lógica de Negocios' : 'Business Logic'}</span>
+                                            <span className="text-sm font-medium text-neutral-300">{t('setup.businessLogic')}</span>
                                             <span className="text-xs text-neutral-500">({selectedBusinessTopics.length})</span>
                                         </div>
                                         <div className="grid grid-cols-2 gap-2">
@@ -492,7 +575,7 @@ export function InterviewSetup({ onOpenApiKeyModal }: InterviewSetupProps) {
                                     <div>
                                         <div className="flex items-center gap-2 mb-2">
                                             <Wrench className="w-4 h-4 text-neutral-500" />
-                                            <span className="text-sm font-medium text-neutral-300">{language === 'pt' ? 'Práticas Modernas' : language === 'es' ? 'Prácticas Modernas' : 'Modern Practices'}</span>
+                                            <span className="text-sm font-medium text-neutral-300">{t('setup.modernPractices')}</span>
                                             <span className="text-xs text-neutral-500">({selectedModernPractices.length})</span>
                                         </div>
                                         <div className="grid grid-cols-2 gap-2">
@@ -564,9 +647,9 @@ export function InterviewSetup({ onOpenApiKeyModal }: InterviewSetupProps) {
                                             <span className="text-neutral-500">{t('setup.ready')}</span>{' '}
                                             {DIFFICULTIES.find(d => d.id === selectedDifficulty)?.label}{' '}
                                             {POSITIONS.find(p => p.id === selectedPosition)?.label}{' '}
-                                            <span className="text-white">({selectedStacks.length} {language === 'pt' ? 'tecnologias' : language === 'es' ? 'tecnologías' : 'technologies'})</span>
-                                            {selectedSoftSkills.length > 0 && <span className="text-neutral-400"> + {selectedSoftSkills.length} soft skills</span>}
-                                            {selectedBusinessTopics.length > 0 && <span className="text-neutral-400"> + {selectedBusinessTopics.length} business</span>}
+                                            <span className="text-white">({selectedStacks.length} {t('setup.technologies')})</span>
+                                            {selectedSoftSkills.length > 0 && <span className="text-neutral-400"> + {selectedSoftSkills.length} {t('setup.softSkills')}</span>}
+                                            {selectedBusinessTopics.length > 0 && <span className="text-neutral-400"> + {selectedBusinessTopics.length} {t('setup.businessLogic')}</span>}
                                         </p>
                                     </motion.div>
                                 )}
@@ -585,10 +668,10 @@ export function InterviewSetup({ onOpenApiKeyModal }: InterviewSetupProps) {
                                     <div className="p-2 bg-neutral-800 rounded-lg"><FileText className="w-5 h-5 text-neutral-400" /></div>
                                     <div>
                                         <h2 className="text-base font-medium text-white">
-                                            {language === 'pt' ? 'Personalize sua Entrevista' : language === 'es' ? 'Personaliza tu Entrevista' : 'Personalize Your Interview'}
+                                            {t('setup.personalizeTitle')}
                                         </h2>
                                         <p className="text-xs text-neutral-500">
-                                            {language === 'pt' ? 'Opcional - adicione seu currículo e vaga alvo' : language === 'es' ? 'Opcional - agrega tu CV y puesto objetivo' : 'Optional - add your resume and target position'}
+                                            {t('setup.personalizeDesc')}
                                         </p>
                                     </div>
                                 </div>

@@ -106,6 +106,52 @@ export const translations: Record<Language, Record<string, string>> = {
         'common.save': 'Save',
         'common.cancel': 'Cancel',
 
+        // Setup extras
+        'setup.complementarySkills': 'Complementary Skills',
+        'setup.complementaryDesc': 'Optional - for complete interview',
+        'setup.selectMultiple': 'Select multiple technologies',
+        'setup.selected': 'selected',
+        'setup.technologies': 'technologies',
+        'setup.personalizeTitle': 'Personalize Your Interview',
+        'setup.personalizeDesc': 'Optional - add your resume and target position',
+        'setup.softSkills': 'Soft Skills',
+        'setup.businessLogic': 'Business Logic',
+        'setup.modernPractices': 'Modern Practices',
+
+        // Chat extras
+        'chat.endConfirmTitle': 'End this interview?',
+        'chat.endConfirmDesc': 'Your performance report will be generated based on your responses.',
+        'chat.interviewingFor': 'Interviewing for',
+        'chat.questions': 'questions',
+        'chat.responses': 'responses',
+        'chat.enterToSend': 'to send',
+        'chat.shiftEnterNewLine': 'for new line',
+        'chat.chars': 'chars',
+        'chat.somethingWrong': 'Something went wrong',
+        'chat.retry': 'Retry',
+        'chat.skipQuestion': 'Skip Question',
+        'chat.shortAnswer': 'Your answer seems short. Try to elaborate more for a better evaluation.',
+        'chat.questionProgress': 'Question',
+        'chat.of': 'of',
+
+        // Landing extras
+        'landing.startInSeconds': 'Start in seconds',
+        'landing.quickStart': 'Quick Start',
+        'landing.quickStartDesc': 'Fullstack · React + Node · Mid-Level',
+        'landing.liveCoach': 'Live Coach',
+        'landing.repeatLast': 'Repeat Last Interview',
+
+        // Coach
+        'coach.title': 'LIVE COACH',
+        'coach.start': 'Start',
+        'coach.stop': 'Stop',
+        'coach.muteMic': 'Mute microphone',
+        'coach.unmuteMic': 'Unmute microphone',
+        'coach.settings': 'Settings',
+        'coach.manageKeys': 'Manage API Keys',
+        'coach.system': 'System',
+        'coach.mic': 'Mic',
+
         // Voice Mode
         'voice.modeVoice': 'Voice Mode',
         'voice.modeText': 'Text Mode',
@@ -119,6 +165,21 @@ export const translations: Record<Language, Record<string, string>> = {
         'voice.switchToText': 'Switch to Text',
         'voice.muteAI': 'Mute AI',
         'voice.unmuteAI': 'Unmute AI',
+        'voice.autoSpeakOn': 'Auto-speak on',
+        'voice.autoSpeakOff': 'Auto-speak off',
+        'voice.voiceNotSupported': 'Voice not supported',
+        'voice.tryChrome': 'Try Chrome or Edge for voice features',
+        'voice.speakNow': 'Speak now... Tap to stop',
+        'voice.aiSpeaking': 'AI is speaking... Tap to stop',
+        'voice.tapOrb': 'Tap the orb to start speaking',
+
+        // History
+        'history.title': 'Interview History',
+        'history.noHistory': 'No past interviews yet',
+        'history.score': 'Score',
+        'history.date': 'Date',
+        'history.viewReport': 'View Report',
+        'history.pastInterviews': 'Past Interviews',
     },
     pt: {
         // Landing Page
@@ -218,6 +279,52 @@ export const translations: Record<Language, Record<string, string>> = {
         'common.save': 'Salvar',
         'common.cancel': 'Cancelar',
 
+        // Setup extras
+        'setup.complementarySkills': 'Competências Complementares',
+        'setup.complementaryDesc': 'Opcional - para entrevista completa',
+        'setup.selectMultiple': 'Selecione várias tecnologias',
+        'setup.selected': 'selecionadas',
+        'setup.technologies': 'tecnologias',
+        'setup.personalizeTitle': 'Personalize sua Entrevista',
+        'setup.personalizeDesc': 'Opcional - adicione seu currículo e vaga alvo',
+        'setup.softSkills': 'Soft Skills',
+        'setup.businessLogic': 'Lógica de Negócios',
+        'setup.modernPractices': 'Práticas Modernas',
+
+        // Chat extras
+        'chat.endConfirmTitle': 'Encerrar esta entrevista?',
+        'chat.endConfirmDesc': 'Seu relatório de desempenho será gerado com base nas suas respostas.',
+        'chat.interviewingFor': 'Entrevistando para',
+        'chat.questions': 'perguntas',
+        'chat.responses': 'respostas',
+        'chat.enterToSend': 'para enviar',
+        'chat.shiftEnterNewLine': 'para nova linha',
+        'chat.chars': 'caracteres',
+        'chat.somethingWrong': 'Algo deu errado',
+        'chat.retry': 'Tentar novamente',
+        'chat.skipQuestion': 'Pular Pergunta',
+        'chat.shortAnswer': 'Sua resposta parece curta. Tente elaborar mais para uma avaliação melhor.',
+        'chat.questionProgress': 'Pergunta',
+        'chat.of': 'de',
+
+        // Landing extras
+        'landing.startInSeconds': 'Comece em segundos',
+        'landing.quickStart': 'Início Rápido',
+        'landing.quickStartDesc': 'Fullstack · React + Node · Pleno',
+        'landing.liveCoach': 'Live Coach',
+        'landing.repeatLast': 'Repetir Última Entrevista',
+
+        // Coach
+        'coach.title': 'LIVE COACH',
+        'coach.start': 'Iniciar',
+        'coach.stop': 'Parar',
+        'coach.muteMic': 'Desativar microfone',
+        'coach.unmuteMic': 'Ativar microfone',
+        'coach.settings': 'Configurações',
+        'coach.manageKeys': 'Gerenciar API Keys',
+        'coach.system': 'Sistema',
+        'coach.mic': 'Mic',
+
         // Voice Mode
         'voice.modeVoice': 'Modo Voz',
         'voice.modeText': 'Modo Texto',
@@ -231,6 +338,21 @@ export const translations: Record<Language, Record<string, string>> = {
         'voice.switchToText': 'Mudar para Texto',
         'voice.muteAI': 'Silenciar IA',
         'voice.unmuteAI': 'Ativar som da IA',
+        'voice.autoSpeakOn': 'Fala automática ligada',
+        'voice.autoSpeakOff': 'Fala automática desligada',
+        'voice.voiceNotSupported': 'Voz não suportada',
+        'voice.tryChrome': 'Use Chrome ou Edge para recursos de voz',
+        'voice.speakNow': 'Fale agora... Toque para parar',
+        'voice.aiSpeaking': 'IA falando... Toque para parar',
+        'voice.tapOrb': 'Toque no orbe para começar a falar',
+
+        // History
+        'history.title': 'Histórico de Entrevistas',
+        'history.noHistory': 'Nenhuma entrevista anterior',
+        'history.score': 'Nota',
+        'history.date': 'Data',
+        'history.viewReport': 'Ver Relatório',
+        'history.pastInterviews': 'Entrevistas Anteriores',
     },
     es: {
         // Landing Page
@@ -330,6 +452,52 @@ export const translations: Record<Language, Record<string, string>> = {
         'common.save': 'Guardar',
         'common.cancel': 'Cancelar',
 
+        // Setup extras
+        'setup.complementarySkills': 'Competencias Complementarias',
+        'setup.complementaryDesc': 'Opcional - para entrevista completa',
+        'setup.selectMultiple': 'Selecciona varias tecnologías',
+        'setup.selected': 'seleccionadas',
+        'setup.technologies': 'tecnologías',
+        'setup.personalizeTitle': 'Personaliza tu Entrevista',
+        'setup.personalizeDesc': 'Opcional - agrega tu CV y puesto objetivo',
+        'setup.softSkills': 'Soft Skills',
+        'setup.businessLogic': 'Lógica de Negocios',
+        'setup.modernPractices': 'Prácticas Modernas',
+
+        // Chat extras
+        'chat.endConfirmTitle': '¿Terminar esta entrevista?',
+        'chat.endConfirmDesc': 'Tu reporte de rendimiento será generado con base en tus respuestas.',
+        'chat.interviewingFor': 'Entrevistando para',
+        'chat.questions': 'preguntas',
+        'chat.responses': 'respuestas',
+        'chat.enterToSend': 'para enviar',
+        'chat.shiftEnterNewLine': 'para nueva línea',
+        'chat.chars': 'caracteres',
+        'chat.somethingWrong': 'Algo salió mal',
+        'chat.retry': 'Reintentar',
+        'chat.skipQuestion': 'Saltar Pregunta',
+        'chat.shortAnswer': 'Tu respuesta parece corta. Intenta elaborar más para una mejor evaluación.',
+        'chat.questionProgress': 'Pregunta',
+        'chat.of': 'de',
+
+        // Landing extras
+        'landing.startInSeconds': 'Comienza en segundos',
+        'landing.quickStart': 'Inicio Rápido',
+        'landing.quickStartDesc': 'Fullstack · React + Node · Mid-Level',
+        'landing.liveCoach': 'Coach en Vivo',
+        'landing.repeatLast': 'Repetir Última Entrevista',
+
+        // Coach
+        'coach.title': 'COACH EN VIVO',
+        'coach.start': 'Iniciar',
+        'coach.stop': 'Parar',
+        'coach.muteMic': 'Silenciar micrófono',
+        'coach.unmuteMic': 'Activar micrófono',
+        'coach.settings': 'Configuraciones',
+        'coach.manageKeys': 'Gestionar API Keys',
+        'coach.system': 'Sistema',
+        'coach.mic': 'Mic',
+
         // Voice Mode
         'voice.modeVoice': 'Modo Voz',
         'voice.modeText': 'Modo Texto',
@@ -343,6 +511,21 @@ export const translations: Record<Language, Record<string, string>> = {
         'voice.switchToText': 'Cambiar a Texto',
         'voice.muteAI': 'Silenciar IA',
         'voice.unmuteAI': 'Activar sonido de IA',
+        'voice.autoSpeakOn': 'Auto-habla activada',
+        'voice.autoSpeakOff': 'Auto-habla desactivada',
+        'voice.voiceNotSupported': 'Voz no compatible',
+        'voice.tryChrome': 'Usa Chrome o Edge para funciones de voz',
+        'voice.speakNow': 'Habla ahora... Toca para parar',
+        'voice.aiSpeaking': 'IA hablando... Toca para parar',
+        'voice.tapOrb': 'Toca el orbe para empezar a hablar',
+
+        // History
+        'history.title': 'Historial de Entrevistas',
+        'history.noHistory': 'Sin entrevistas anteriores',
+        'history.score': 'Nota',
+        'history.date': 'Fecha',
+        'history.viewReport': 'Ver Reporte',
+        'history.pastInterviews': 'Entrevistas Anteriores',
     },
 };
 

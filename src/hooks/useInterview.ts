@@ -2,10 +2,10 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAppStore } from '@/lib/store';
 import { sendChatRequest, generateReport } from '@/lib/openai';
 import { generateSystemPrompt, generateReportPrompt } from '@/lib/prompts';
-import { Message } from '@/types';
+import { Message, InterviewHistoryEntry } from '@/types';
 
 export function useInterview() {
-    const { getActiveKey, userProfile, language, resumeData, jobContext } = useAppStore();
+    const { getActiveKey, userProfile, language, resumeData, jobContext, addToHistory } = useAppStore();
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -17,7 +17,7 @@ export function useInterview() {
     const sendMessage = useCallback(async (content: string) => {
         if (!activeKey || !userProfile) return;
 
-        const newMessage: Message = { role: 'user', content };
+        const newMessage: Message = { role: 'user', content, timestamp: Date.now() };
 
         const newMessages = [...messages, newMessage];
         setMessages(newMessages);
@@ -37,7 +37,7 @@ export function useInterview() {
                 systemPrompt
             });
 
-            const assistantMessage: Message = { role: 'assistant', content: responseContent };
+            const assistantMessage: Message = { role: 'assistant', content: responseContent, timestamp: Date.now() };
             setMessages(prev => [...prev, assistantMessage]);
         } catch (err: any) {
             setError(err.message || "Failed to send message");
@@ -64,7 +64,7 @@ export function useInterview() {
                         })
                     });
 
-                    setMessages([{ role: 'assistant', content: responseContent }]);
+                    setMessages([{ role: 'assistant', content: responseContent, timestamp: Date.now() }]);
                 } catch (err: any) {
                     setError(err.message || "Failed to start interview");
                 } finally {
@@ -93,6 +93,20 @@ export function useInterview() {
 
             const { setReport } = useAppStore.getState();
             setReport(reportData);
+
+            // Save to history
+            const historyEntry: InterviewHistoryEntry = {
+                id: crypto.randomUUID(),
+                date: Date.now(),
+                position: userProfile.position,
+                stacks: userProfile.stacks,
+                level: userProfile.level,
+                score: reportData.score,
+                hiringDecision: reportData.hiringDecision,
+                report: reportData
+            };
+            addToHistory(historyEntry);
+
         } catch (err: any) {
             setError(err.message || "Failed to generate report");
         } finally {

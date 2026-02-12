@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { useAppStore } from '@/lib/store';
 import { Button } from './ui/Button';
 import { POSITIONS, STACKS, DIFFICULTIES, SOFT_SKILLS, BUSINESS_TOPICS, MODERN_PRACTICES } from '@/lib/constants';
@@ -130,18 +130,18 @@ export function InterviewSetup({ onOpenApiKeyModal, onOpenLiveCoach }: Interview
         );
     }, [searchTerm, currentStacks]);
 
-    const fadeIn = {
+    const fadeIn: Variants = {
         hidden: { opacity: 0, scale: 0.98, filter: 'blur(10px)' },
         visible: { opacity: 1, scale: 1, filter: 'blur(0px)', transition: { duration: 0.4, ease: "easeOut" } },
         exit: { opacity: 0, scale: 0.98, filter: 'blur(10px)', transition: { duration: 0.3 } }
     };
 
-    const staggerContainer = {
+    const staggerContainer: Variants = {
         hidden: { opacity: 0 },
         visible: { opacity: 1, transition: { staggerChildren: 0.03 } }
     };
 
-    const staggerItem = {
+    const staggerItem: Variants = {
         hidden: { opacity: 0, y: 10 },
         visible: { opacity: 1, y: 0 }
     };

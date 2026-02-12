@@ -16,32 +16,32 @@ const translations = {
     en: {
         title: 'Upload Your Resume',
         subtitle: 'PDF format, max 10MB',
-        dragDrop: 'Drag & drop your resume here',
-        or: 'or',
-        browse: 'Browse files',
-        uploaded: 'Resume uploaded',
+        dragDrop: 'Drag or Drop',
+        dragDropDesc: 'Upload a PDF',
+        browse: 'Browse',
+        uploaded: 'Resume Uploaded',
         clear: 'Remove',
-        processing: 'Processing...',
+        processing: 'Analyzing...',
     },
     pt: {
         title: 'Envie seu Currículo',
         subtitle: 'Formato PDF, máx 10MB',
-        dragDrop: 'Arraste e solte seu currículo aqui',
-        or: 'ou',
-        browse: 'Procurar arquivos',
-        uploaded: 'Currículo enviado',
+        dragDrop: 'Arraste ou Solte',
+        dragDropDesc: 'Envie um PDF',
+        browse: 'Procurar',
+        uploaded: 'Currículo Enviado',
         clear: 'Remover',
-        processing: 'Processando...',
+        processing: 'Analisando...',
     },
     es: {
         title: 'Sube tu Currículum',
         subtitle: 'Formato PDF, máx 10MB',
-        dragDrop: 'Arrastra y suelta tu currículum aquí',
-        or: 'o',
-        browse: 'Buscar archivos',
-        uploaded: 'Currículum subido',
+        dragDrop: 'Arrastra y Suelta',
+        dragDropDesc: 'Sube un PDF',
+        browse: 'Buscar',
+        uploaded: 'Currículum Subido',
         clear: 'Eliminar',
-        processing: 'Procesando...',
+        processing: 'Analizando...',
     },
 } as const;
 
@@ -105,14 +105,13 @@ export function ResumeUpload({ onUploadComplete, className }: ResumeUploadProps)
         }
     }, [setResumeData]);
 
-    // Already uploaded state
     if (resumeData) {
         return (
-            <div className={clsx("p-4 rounded-xl border border-neutral-700 bg-neutral-800/50", className)}>
+            <div className={clsx("group relative overflow-hidden rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 transition-all hover:border-emerald-500/30", className)}>
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-green-500/10 rounded-lg">
-                            <Check className="w-5 h-5 text-green-400" />
+                    <div className="flex items-center gap-4">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20">
+                            <FileText className="h-5 w-5" />
                         </div>
                         <div>
                             <p className="text-sm font-medium text-white">{t.uploaded}</p>
@@ -121,18 +120,10 @@ export function ResumeUpload({ onUploadComplete, className }: ResumeUploadProps)
                     </div>
                     <button
                         onClick={handleClear}
-                        className="text-xs text-neutral-400 hover:text-red-400 transition-colors flex items-center gap-1"
+                        className="rounded-lg p-2 text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors"
                     >
-                        <X className="w-3 h-3" />
-                        {t.clear}
+                        <X className="w-4 h-4" />
                     </button>
-                </div>
-
-                {/* Preview snippet */}
-                <div className="mt-3 p-3 bg-neutral-900 rounded-lg max-h-24 overflow-hidden">
-                    <p className="text-xs text-neutral-500 line-clamp-3">
-                        {resumeData.summary.slice(0, 200)}...
-                    </p>
                 </div>
             </div>
         );
@@ -140,23 +131,21 @@ export function ResumeUpload({ onUploadComplete, className }: ResumeUploadProps)
 
     return (
         <div className={className}>
-            <p className="text-sm font-medium text-white mb-2">{t.title}</p>
-            <p className="text-xs text-neutral-500 mb-3">{t.subtitle}</p>
+            <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-neutral-200">{t.title}</p>
+                <span className="text-xs text-neutral-500 bg-white/5 px-2 py-0.5 rounded">{t.subtitle}</span>
+            </div>
 
             <motion.div
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onClick={() => fileInputRef.current?.click()}
-                className={clsx(
-                    "relative p-6 rounded-xl border-2 border-dashed cursor-pointer transition-colors",
-                    isDragging
-                        ? "border-white bg-neutral-800"
-                        : "border-neutral-700 hover:border-neutral-600 bg-neutral-800/30"
-                )}
                 animate={{
-                    scale: isDragging ? 1.02 : 1,
+                    borderColor: isDragging ? 'rgb(99 102 241)' : 'rgba(255, 255, 255, 0.1)',
+                    backgroundColor: isDragging ? 'rgba(99, 102, 241, 0.05)' : 'rgba(255, 255, 255, 0.02)',
                 }}
+                className="relative cursor-pointer rounded-xl border-2 border-dashed border-white/10 p-8 transition-all hover:border-white/20 hover:bg-white/[0.04]"
             >
                 <input
                     ref={fileInputRef}
@@ -166,22 +155,26 @@ export function ResumeUpload({ onUploadComplete, className }: ResumeUploadProps)
                     className="hidden"
                 />
 
-                <div className="flex flex-col items-center text-center">
+                <div className="flex flex-col items-center justify-center text-center">
                     {isUploading ? (
                         <>
-                            <Loader2 className="w-8 h-8 text-neutral-400 animate-spin mb-2" />
-                            <p className="text-sm text-neutral-400">{t.processing}</p>
+                            <div className="relative mb-4">
+                                <div className="absolute inset-0 animate-pulse rounded-full bg-indigo-500/20 blur-xl"></div>
+                                <Loader2 className="relative h-8 w-8 animate-spin text-indigo-400" />
+                            </div>
+                            <p className="text-sm font-medium text-neutral-300">{t.processing}</p>
                         </>
                     ) : (
                         <>
-                            <div className="p-3 bg-neutral-800 rounded-xl mb-3">
-                                <Upload className="w-6 h-6 text-neutral-400" />
+                            <div className="mb-4 rounded-full bg-neutral-900 p-3 ring-1 ring-white/10 shadow-lg">
+                                <Upload className="h-5 w-5 text-neutral-400" />
                             </div>
-                            <p className="text-sm text-neutral-300 mb-1">{t.dragDrop}</p>
-                            <p className="text-xs text-neutral-500 mb-2">{t.or}</p>
-                            <span className="text-xs text-white bg-neutral-700 hover:bg-neutral-600 px-3 py-1.5 rounded-lg transition-colors">
-                                {t.browse}
-                            </span>
+                            <p className="mb-1 text-sm font-medium text-neutral-200">
+                                <span className="text-indigo-400 hover:underline">{t.browse}</span> {t.dragDrop}
+                            </p>
+                            <p className="text-xs text-neutral-500">
+                                PDF, DOCX (Max 10MB)
+                            </p>
                         </>
                     )}
                 </div>
@@ -193,10 +186,10 @@ export function ResumeUpload({ onUploadComplete, className }: ResumeUploadProps)
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        className="mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-2"
+                        className="mt-3 flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 p-3"
                     >
-                        <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
-                        <p className="text-xs text-red-400">{error}</p>
+                        <AlertCircle className="h-4 w-4 shrink-0 text-red-400" />
+                        <p className="text-xs text-red-200">{error}</p>
                     </motion.div>
                 )}
             </AnimatePresence>

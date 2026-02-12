@@ -86,48 +86,55 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
     const userResponses = messages.filter(m => m.role === 'user').length;
 
     return (
-        <div className="flex flex-col h-screen bg-neutral-950">
+        <div className="flex flex-col h-screen bg-neutral-950 relative overflow-hidden">
+            {/* Dynamic Background */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-indigo-950/20 via-neutral-950 to-neutral-950 pointer-events-none"></div>
+            <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-neutral-950/80 to-transparent pointer-events-none z-10"></div>
+
             {/* Header */}
-            <header className="flex items-center justify-between py-3 px-4 md:px-6 border-b border-neutral-800 bg-neutral-950/95 backdrop-blur-sm z-20 sticky top-0">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg shadow-white/5">
+            <header className="flex items-center justify-between py-4 px-6 border-b border-white/5 bg-neutral-900/60 backdrop-blur-xl z-20 sticky top-0 shadow-sm">
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-[0_0_15px_-5px_rgba(255,255,255,0.4)]">
                         <Sparkles className="w-5 h-5 text-neutral-900" />
                     </div>
                     <div>
-                        <span className="text-base font-semibold text-white">Interview<span className="text-neutral-500">AI</span></span>
-                        <p className="text-xs text-neutral-500 hidden md:flex items-center gap-2">
-                            <MessageSquare className="w-3 h-3" />
-                            {questionsAsked} {t('chat.questions')} · {userResponses} {t('chat.responses')}
+                        <span className="text-lg font-semibold text-white tracking-tight">Interview<span className="text-neutral-500">AI</span></span>
+                        <p className="text-xs text-neutral-400 hidden md:flex items-center gap-2">
+                            <span className="flex items-center gap-1.5"><MessageSquare className="w-3 h-3 text-indigo-400" /> {questionsAsked} {t('chat.questions')}</span>
+                            <span className="w-1 h-1 rounded-full bg-neutral-700"></span>
+                            <span className="flex items-center gap-1.5"><User className="w-3 h-3 text-emerald-400" /> {userResponses} {t('chat.responses')}</span>
                         </p>
                     </div>
                 </div>
-                <div className="flex items-center gap-2 md:gap-3">
-                    <InterviewTimer />
+                <div className="flex items-center gap-3">
+                    <div className="bg-neutral-800/50 rounded-lg px-3 py-1.5 border border-white/5">
+                        <InterviewTimer />
+                    </div>
 
                     {/* Model Selector */}
                     <div className="relative hidden md:block">
                         <button
                             onClick={() => setShowModelSelector(!showModelSelector)}
                             aria-label={t('voice.selectModel')}
-                            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 rounded-lg text-xs text-neutral-400 hover:text-neutral-200 transition-colors"
+                            className="flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs text-neutral-300 transition-all hover:scale-105"
                         >
-                            <span className="max-w-[80px] truncate">
+                            <span className="max-w-[100px] truncate font-medium">
                                 {availableModels.find(m => m.id === selectedModel)?.name || t('voice.selectModel')}
                             </span>
-                            <ChevronDown className="w-3 h-3" />
+                            <ChevronDown className="w-3 h-3 text-neutral-500" />
                         </button>
                         <AnimatePresence>
                             {showModelSelector && (
                                 <>
                                     <div className="fixed inset-0 z-40" onClick={() => setShowModelSelector(false)} />
                                     <motion.div
-                                        initial={{ opacity: 0, y: -10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -10 }}
-                                        className="absolute right-0 top-full mt-2 w-64 bg-neutral-900 border border-neutral-800 rounded-xl p-2 shadow-xl z-50"
+                                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                        className="absolute right-0 top-full mt-2 w-64 bg-neutral-900/90 backdrop-blur-xl border border-white/10 rounded-xl p-2 shadow-2xl z-50"
                                     >
-                                        <p className="text-xs text-neutral-500 px-2 py-1">
-                                            {provider.toUpperCase()} Models
+                                        <p className="text-[10px] uppercase font-bold text-neutral-500 px-3 py-2 tracking-wider">
+                                            {provider} Models
                                         </p>
                                         {availableModels.map((model) => (
                                             <button
@@ -137,14 +144,14 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
                                                     setShowModelSelector(false);
                                                 }}
                                                 className={clsx(
-                                                    "w-full flex flex-col items-start px-3 py-2 rounded-lg text-left transition-colors",
+                                                    "w-full flex flex-col items-start px-3 py-2.5 rounded-lg text-left transition-colors",
                                                     selectedModel === model.id
-                                                        ? "bg-white/10 text-white"
-                                                        : "text-neutral-300 hover:bg-neutral-800"
+                                                        ? "bg-indigo-500/20 text-indigo-200"
+                                                        : "text-neutral-300 hover:bg-white/5"
                                                 )}
                                             >
                                                 <span className="text-sm font-medium">{model.name}</span>
-                                                <span className="text-xs text-neutral-500">{model.description}</span>
+                                                <span className="text-xs text-neutral-500 mt-0.5">{model.description}</span>
                                             </button>
                                         ))}
                                     </motion.div>
@@ -158,7 +165,7 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
                         <button
                             onClick={() => setVoiceEnabled(true)}
                             aria-label={t('voice.modeVoice')}
-                            className="p-2 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-400 hover:text-neutral-200 transition-colors"
+                            className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-400 hover:text-white transition-all hover:scale-105 hover:shadow-[0_0_15px_-5px_rgba(255,255,255,0.3)]"
                             title={t('voice.modeVoice')}
                         >
                             <Mic className="w-4 h-4" />
@@ -169,7 +176,7 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
                     <button
                         onClick={onOpenSettings}
                         aria-label={t('coach.manageKeys')}
-                        className="p-2 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-400 hover:text-neutral-200 transition-colors"
+                        className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-400 hover:text-white transition-all hover:scale-105"
                         title={t('coach.manageKeys')}
                     >
                         <Settings className="w-4 h-4" />
@@ -181,16 +188,16 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
                             size="sm"
                             onClick={() => setShowEndConfirm(true)}
                             disabled={isFinishing || messages.length < 4}
-                            className="border-neutral-700"
+                            className="border-red-500/20 text-red-400 hover:bg-red-500/10 hover:text-red-300 h-10 px-4 rounded-xl"
                         >
                             {isFinishing ? (
                                 <>
-                                    <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
                                     <span className="hidden md:inline">{t('chat.generating')}</span>
                                 </>
                             ) : (
                                 <>
-                                    <LogOut className="w-4 h-4 md:mr-1.5" />
+                                    <LogOut className="w-4 h-4 md:mr-2" />
                                     <span className="hidden md:inline">{t('chat.endInterview')}</span>
                                 </>
                             )}
@@ -200,24 +207,24 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
                         <AnimatePresence>
                             {showEndConfirm && (
                                 <>
-                                    <div className="fixed inset-0 z-40" onClick={() => setShowEndConfirm(false)} />
+                                    <div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm" onClick={() => setShowEndConfirm(false)} />
                                     <motion.div
-                                        initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                                        initial={{ opacity: 0, scale: 0.9, y: -10 }}
                                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                                        exit={{ opacity: 0, scale: 0.95, y: -4 }}
-                                        className="absolute right-0 top-full mt-2 w-72 bg-neutral-900 border border-neutral-800 rounded-xl p-4 shadow-xl z-50"
+                                        exit={{ opacity: 0, scale: 0.9, y: -10 }}
+                                        className="absolute right-0 top-full mt-2 w-80 bg-neutral-900 border border-white/10 rounded-2xl p-5 shadow-2xl z-50 ring-1 ring-white/10"
                                     >
-                                        <p className="text-sm text-neutral-200 mb-3">
-                                            {t('chat.endConfirmTitle') || 'End this interview?'}
+                                        <h4 className="text-base font-semibold text-white mb-2">
+                                            {t('chat.endConfirmTitle') || 'Finish Interview?'}
+                                        </h4>
+                                        <p className="text-sm text-neutral-400 mb-5 leading-relaxed">
+                                            {t('chat.endConfirmDesc') || 'We will generate a detailed feedback report based on your responses. This cannot be undone.'}
                                         </p>
-                                        <p className="text-xs text-neutral-500 mb-4">
-                                            {t('chat.endConfirmDesc') || 'Your performance report will be generated based on your responses.'}
-                                        </p>
-                                        <div className="flex gap-2">
-                                            <Button size="sm" variant="ghost" onClick={() => setShowEndConfirm(false)} className="flex-1">
+                                        <div className="flex gap-3">
+                                            <Button size="sm" variant="ghost" onClick={() => setShowEndConfirm(false)} className="flex-1 text-neutral-400 hover:text-white">
                                                 Cancel
                                             </Button>
-                                            <Button size="sm" variant="danger" onClick={handleFinish} className="flex-1">
+                                            <Button size="sm" variant="danger" onClick={handleFinish} className="flex-1 bg-gradient-to-r from-red-600 to-red-500 border-0 shadow-lg shadow-red-500/20">
                                                 End Interview
                                             </Button>
                                         </div>
@@ -232,75 +239,72 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
             {/* Interview Context Banner */}
             {userProfile && messages.length <= 2 && (
                 <motion.div
-                    initial={{ opacity: 0, y: -10 }}
+                    initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mx-auto max-w-3xl w-full px-4 pt-4"
+                    className="relative z-10 mx-auto max-w-2xl w-full px-4 pt-6"
                 >
-                    <div className="bg-neutral-900/50 border border-neutral-800 rounded-lg px-4 py-3 text-center">
-                        <p className="text-xs text-neutral-500">
-                            {t('chat.interviewingFor')}{' '}
-                            <span className="text-neutral-300 font-medium">{userProfile.level}</span>{' '}
-                            <span className="text-neutral-200">{userProfile.position}</span>{' '}
-                            <span className="text-neutral-500">·</span>{' '}
-                            <span className="text-neutral-400">{userProfile.stacks.slice(0, 3).join(', ')}{userProfile.stacks.length > 3 ? ` +${userProfile.stacks.length - 3}` : ''}</span>
+                    <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl py-3 px-6 text-center shadow-xl">
+                        <p className="text-xs font-medium text-neutral-400 uppercase tracking-widest mb-1.5">Interview Context</p>
+                        <p className="text-sm text-neutral-200">
+                            <span className="text-indigo-300 font-semibold">{userProfile.level}</span>{' '}
+                            <span className="text-white font-bold">{userProfile.position}</span>
+                            <span className="mx-2 text-neutral-600">|</span>
+                            <span className="text-neutral-300">{userProfile.stacks.slice(0, 3).join(', ')}{userProfile.stacks.length > 3 ? ` +${userProfile.stacks.length - 3}` : ''}</span>
                         </p>
                     </div>
                 </motion.div>
             )}
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto">
-                <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
-                    <AnimatePresence>
+            <div className="flex-1 overflow-y-auto custom-scrollbar relative z-10">
+                <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+                    <AnimatePresence initial={false}>
                         {messages.map((msg, idx) => (
                             <motion.div
                                 key={idx}
-                                initial={{ opacity: 0, y: 12 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.25, ease: "easeOut" }}
+                                initial={{ opacity: 0, y: 20, scale: 0.98 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                transition={{ duration: 0.3, ease: "easeOut" }}
                                 className={clsx(
-                                    "flex gap-3 group",
+                                    "flex gap-4 group",
                                     msg.role === 'user' ? 'flex-row-reverse' : ''
                                 )}
                             >
                                 {/* Avatar */}
-                                <motion.div
-                                    initial={{ scale: 0.8 }}
-                                    animate={{ scale: 1 }}
-                                    className={clsx(
-                                        "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-lg",
+                                <div className="shrink-0 pt-1">
+                                    <div className={clsx(
+                                        "w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg transition-transform hover:scale-105",
                                         msg.role === 'assistant'
-                                            ? 'bg-gradient-to-br from-neutral-800 to-neutral-900 text-neutral-400 border border-neutral-700'
-                                            : 'bg-white text-neutral-900'
-                                    )}
-                                >
-                                    {msg.role === 'assistant' ? <Bot className="w-4 h-4" /> : <User className="w-4 h-4" />}
-                                </motion.div>
+                                            ? 'bg-gradient-to-br from-neutral-800 to-neutral-900 border border-white/10 text-indigo-400'
+                                            : 'bg-gradient-to-br from-white to-neutral-200 text-neutral-900'
+                                    )}>
+                                        {msg.role === 'assistant' ? <Bot className="w-5 h-5" /> : <User className="w-5 h-5" />}
+                                    </div>
+                                </div>
 
                                 {/* Message Bubble */}
                                 <div className={clsx(
-                                    "relative px-4 py-3 rounded-2xl max-w-[85%] shadow-sm",
+                                    "relative px-6 py-4 rounded-3xl max-w-[85%] shadow-md",
                                     msg.role === 'assistant'
-                                        ? 'bg-neutral-900 border border-neutral-800 text-neutral-200 rounded-tl-md'
-                                        : 'bg-white text-neutral-900 rounded-tr-md'
+                                        ? 'bg-neutral-900/80 backdrop-blur-sm border border-white/5 text-neutral-200 rounded-tl-sm'
+                                        : 'bg-white text-neutral-900 rounded-tr-sm shadow-[0_0_20px_-5px_rgba(255,255,255,0.1)]'
                                 )}>
                                     {/* Copy button for assistant messages */}
                                     {msg.role === 'assistant' && (
                                         <button
                                             onClick={() => handleCopy(msg.content, idx)}
-                                            className="absolute -top-2 -right-2 p-1.5 bg-neutral-800 border border-neutral-700 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity text-neutral-400 hover:text-white hover:bg-neutral-700"
+                                            className="absolute -top-3 -right-3 p-2 bg-neutral-800 border border-neutral-700 rounded-xl opacity-0 group-hover:opacity-100 transition-all text-neutral-400 hover:text-white hover:bg-neutral-700 shadow-lg scale-90 hover:scale-100"
                                             title="Copy"
                                         >
-                                            {copiedIdx === idx ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
+                                            {copiedIdx === idx ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                                         </button>
                                     )}
 
                                     <div className={clsx(
-                                        "prose prose-sm max-w-none",
+                                        "prose prose-sm max-w-none leading-relaxed",
                                         msg.role === 'assistant'
-                                            ? 'prose-invert prose-p:text-neutral-200 prose-strong:text-white prose-code:text-neutral-300 prose-code:bg-neutral-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none'
-                                            : 'prose-neutral',
-                                        'prose-p:my-1 prose-pre:my-2 prose-pre:bg-neutral-800 prose-pre:border prose-pre:border-neutral-700 prose-pre:rounded-lg prose-ul:my-2 prose-li:my-0.5'
+                                            ? 'prose-invert prose-p:text-neutral-300 prose-headings:text-white prose-strong:text-white prose-code:text-indigo-300 prose-code:bg-indigo-900/30 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-pre:bg-neutral-950 prose-pre:border prose-pre:border-white/10'
+                                            : 'prose-neutral prose-p:text-neutral-800'
                                     )}>
                                         {msg.role === 'assistant' ? (
                                             <ReactMarkdown>{msg.content}</ReactMarkdown>
@@ -311,8 +315,8 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
 
                                     {/* Timestamp for assistant */}
                                     {msg.role === 'assistant' && (
-                                        <div className="mt-2 flex items-center gap-1 text-[10px] text-neutral-600">
-                                            <Clock className="w-2.5 h-2.5" />
+                                        <div className="mt-3 flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-medium text-neutral-600">
+                                            <Clock className="w-3 h-3" />
                                             {msg.timestamp
                                                 ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                                                 : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -331,20 +335,20 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: 10 }}
-                                className="flex gap-3"
+                                className="flex gap-4"
                             >
-                                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-neutral-800 to-neutral-900 text-neutral-400 flex items-center justify-center border border-neutral-700">
-                                    <Bot className="w-4 h-4" />
+                                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-neutral-800 to-neutral-900 border border-white/10 text-neutral-400 flex items-center justify-center shrink-0">
+                                    <Bot className="w-5 h-5" />
                                 </div>
-                                <div className="flex items-center bg-neutral-900 border border-neutral-800 px-4 py-3 rounded-2xl rounded-tl-md">
+                                <div className="flex items-center bg-neutral-900/50 border border-white/5 px-5 py-4 rounded-3xl rounded-tl-sm backdrop-blur-sm">
                                     <div className="flex gap-1.5 mr-3">
                                         {[0, 1, 2].map(i => (
                                             <motion.span
                                                 key={i}
-                                                className="w-2 h-2 bg-neutral-500 rounded-full"
-                                                animate={{ y: [0, -6, 0] }}
+                                                className="w-2 h-2 bg-indigo-500 rounded-full"
+                                                animate={{ y: [0, -6, 0], opacity: [0.5, 1, 0.5] }}
                                                 transition={{
-                                                    duration: 0.6,
+                                                    duration: 0.8,
                                                     repeat: Infinity,
                                                     delay: i * 0.15,
                                                     ease: "easeInOut"
@@ -352,7 +356,7 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
                                             />
                                         ))}
                                     </div>
-                                    <span className="text-sm text-neutral-500">{t('chat.thinking')}</span>
+                                    <span className="text-sm font-medium text-neutral-400">{t('chat.thinking')}</span>
                                 </div>
                             </motion.div>
                         )}
@@ -362,19 +366,21 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
                     <AnimatePresence>
                         {error && (
                             <motion.div
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
+                                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95 }}
-                                className="flex items-center justify-center p-4"
+                                className="flex justify-center"
                             >
-                                <div className="bg-red-950/50 text-red-400 px-4 py-3 rounded-xl flex items-center gap-3 text-sm border border-red-900/50">
-                                    <AlertCircle className="w-5 h-5" />
-                                    <div>
-                                        <p className="font-medium">Something went wrong</p>
-                                        <p className="text-red-500 text-xs">{error}</p>
+                                <div className="bg-red-500/10 backdrop-blur-md text-red-400 px-5 py-4 rounded-2xl flex items-center gap-4 text-sm border border-red-500/20 shadow-xl max-w-md">
+                                    <div className="p-2 bg-red-500/20 rounded-lg">
+                                        <AlertCircle className="w-5 h-5" />
                                     </div>
-                                    <Button size="sm" variant="ghost" onClick={() => window.location.reload()} className="ml-2">
-                                        <RotateCcw className="w-3 h-3 mr-1" /> Retry
+                                    <div className="flex-1">
+                                        <p className="font-semibold text-red-300">Connection Error</p>
+                                        <p className="text-red-400/80 text-xs mt-0.5 leading-snug">{error}</p>
+                                    </div>
+                                    <Button size="sm" variant="ghost" onClick={() => window.location.reload()} className="hover:bg-red-500/20 text-red-300">
+                                        <RotateCcw className="w-4 h-4" />
                                     </Button>
                                 </div>
                             </motion.div>
@@ -386,50 +392,60 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
             </div>
 
             {/* Input Area */}
-            <div className="p-4 border-t border-neutral-800 bg-neutral-950/95 backdrop-blur-sm">
-                <div className="max-w-3xl mx-auto">
-                    <div className="flex gap-3 items-end">
-                        <div className="flex-1 relative">
+            <div className="p-6 border-t border-white/5 bg-neutral-950/80 backdrop-blur-xl relative z-20">
+                <div className="max-w-4xl mx-auto">
+                    <div className="relative group">
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500/30 to-purple-500/30 rounded-2xl blur opacity-0 group-focus-within:opacity-100 transition duration-500"></div>
+                        <div className="bg-neutral-900 rounded-2xl border border-white/10 relative flex items-end overflow-hidden shadow-xl transition-colors group-focus-within:border-white/20">
                             <textarea
                                 ref={inputRef}
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={handleKeyDown}
                                 placeholder={t('chat.placeholder') || "Type your answer..."}
-                                className="w-full min-h-[48px] max-h-[150px] px-4 py-3 rounded-xl bg-neutral-900 border border-neutral-800 text-neutral-100 text-sm placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-700 focus:border-neutral-700 disabled:opacity-50 resize-none transition-all"
+                                className="w-full min-h-[60px] max-h-[200px] px-5 py-4 bg-transparent text-neutral-100 text-base placeholder:text-neutral-600 focus:outline-none resize-none"
                                 disabled={isLoading}
                                 autoFocus
                                 rows={1}
                             />
-                            <div className="absolute bottom-3 right-3 text-[10px] text-neutral-600">
-                                {input.length > 0 && `${input.length} chars`}
+                            <div className="p-2 pb-3 pr-3">
+                                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                    <Button
+                                        onClick={handleSend}
+                                        disabled={isLoading || !input.trim()}
+                                        aria-label={t('chat.send')}
+                                        className={clsx(
+                                            "h-10 w-10 p-0 rounded-xl transition-all",
+                                            input.trim()
+                                                ? "bg-white text-neutral-900 hover:bg-neutral-200 shadow-[0_0_15px_-3px_rgba(255,255,255,0.4)]"
+                                                : "bg-neutral-800 text-neutral-500"
+                                        )}
+                                    >
+                                        <Send className="w-5 h-5 ml-0.5" />
+                                    </Button>
+                                </motion.div>
                             </div>
                         </div>
-                        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                            <Button
-                                onClick={handleSend}
-                                disabled={isLoading || !input.trim()}
-                                aria-label={t('chat.send')}
-                                className="h-12 w-12 p-0 rounded-xl"
-                            >
-                                <Send className="w-5 h-5" />
-                            </Button>
-                        </motion.div>
                     </div>
 
-                    <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center justify-between mt-3 px-1">
                         <button
                             onClick={handleSkip}
                             disabled={isLoading}
-                            className="text-[10px] text-neutral-500 hover:text-neutral-300 transition-colors flex items-center gap-1"
+                            className="text-xs text-neutral-500 hover:text-white transition-colors flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-white/5"
                         >
-                            <SkipForward className="w-3 h-3" />
+                            <SkipForward className="w-3.5 h-3.5" />
                             {t('chat.skipQuestion')}
                         </button>
 
-                        <p className="text-[10px] text-neutral-600 text-center">
-                            <kbd className="px-1 py-0.5 bg-neutral-800 rounded text-neutral-400 font-mono">Enter</kbd> {t('chat.enterToSend')} · <kbd className="px-1 py-0.5 bg-neutral-800 rounded text-neutral-400 font-mono">Shift+Enter</kbd> {t('chat.shiftEnterNewLine')}
-                        </p>
+                        <div className="flex gap-4 text-[10px] font-medium text-neutral-600 uppercase tracking-widest hidden sm:flex">
+                            <span className="flex items-center gap-1.5">
+                                <kbd className="px-1.5 py-0.5 bg-neutral-800 rounded-md border border-white/5 text-neutral-400 font-sans">Enter</kbd> Send
+                            </span>
+                            <span className="flex items-center gap-1.5">
+                                <kbd className="px-1.5 py-0.5 bg-neutral-800 rounded-md border border-white/5 text-neutral-400 font-sans">Shift+Enter</kbd> New Line
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -40,9 +40,13 @@ export class RealtimeTranscriber {
     private onTranscript: OnTranscript;
     private onError: OnError;
     private onStatusChange: OnStatusChange;
-    private audioProcessor: ScriptProcessorNode | null = null;
     private audioContext: AudioContext | null = null;
+    private audioWorkletNode: AudioWorkletNode | null = null;
+    private mediaStreamSource: MediaStreamAudioSourceNode | null = null;
     private isActive = false;
+    private reconnectAttempts = 0;
+    private maxReconnectAttempts = 3;
+    private reconnectTimeout: NodeJS.Timeout | null = null;
 
     constructor(
         config: RealtimeConfig,
@@ -62,6 +66,15 @@ export class RealtimeTranscriber {
         this.onStatusChange('connecting');
 
         try {
+            await this.connectWebSocket();
+            await this.startAudioStream(stream);
+        } catch (err: unknown) {
+            this.handleConnectionError(err);
+        }
+    }
+
+    private async connectWebSocket(): Promise<void> {
+        return new Promise((resolve, reject) => {
             const model = this.config.model || 'gpt-4o-realtime-preview';
             const wsUrl = `wss://api.openai.com/v1/realtime?model=${model}`;
 
@@ -72,10 +85,10 @@ export class RealtimeTranscriber {
             ]);
 
             this.ws.onopen = () => {
+                this.reconnectAttempts = 0;
                 this.onStatusChange('connected');
 
                 // Configure session for transcription-only
-                // Note: input_audio_transcription uses whisper-1, not the connection model
                 this.ws?.send(JSON.stringify({
                     type: 'session.update',
                     session: {
@@ -92,9 +105,7 @@ export class RealtimeTranscriber {
                         },
                     },
                 }));
-
-                // Start streaming audio
-                this.startAudioStream(stream);
+                resolve();
             };
 
             this.ws.onmessage = (event) => {
@@ -106,21 +117,54 @@ export class RealtimeTranscriber {
                 }
             };
 
-            this.ws.onerror = () => {
-                this.onError('WebSocket connection error');
-                this.onStatusChange('error');
+            this.ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                // Don't reject here instantly, let onclose handle it or specific timeout
             };
 
             this.ws.onclose = () => {
-                this.onStatusChange('disconnected');
-                this.isActive = false;
+                if (this.isActive) {
+                    this.onStatusChange('disconnected');
+                    this.attemptReconnect();
+                }
             };
-        } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Failed to connect';
-            this.onError(msg);
-            this.onStatusChange('error');
+        });
+    }
+
+    private handleConnectionError(err: unknown) {
+        const msg = err instanceof Error ? err.message : 'Failed to connect';
+        this.onError(msg);
+        this.onStatusChange('error');
+        this.isActive = false;
+    }
+
+    private attemptReconnect() {
+        if (!this.isActive || this.reconnectAttempts >= this.maxReconnectAttempts) {
             this.isActive = false;
+            this.onStatusChange('error');
+            this.onError('Connection lost and could not be restored');
+            return;
         }
+
+        this.reconnectAttempts++;
+        const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
+
+        console.log(`Attempting reconnect ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${delay}ms`);
+
+        if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout);
+
+        this.reconnectTimeout = setTimeout(async () => {
+            try {
+                await this.connectWebSocket();
+                // If audio context exists, we might need to verify it's still running
+                if (this.audioContext && this.audioContext.state === 'suspended') {
+                    await this.audioContext.resume();
+                }
+            } catch (err) {
+                // Reconnect failed, it will trigger onclose again or we assume it failed
+                console.error('Reconnect failed', err);
+            }
+        }, delay);
     }
 
     private handleMessage(msg: Record<string, unknown>) {
@@ -142,45 +186,57 @@ export class RealtimeTranscriber {
                 break;
 
             case 'error':
-                this.onError(
-                    (msg.error as Record<string, string>)?.message || 'Realtime API error'
-                );
+                // Check if it's a fatal error or transient
+                const errorMsg = (msg.error as Record<string, string>)?.message || 'Realtime API error';
+                console.error('Realtime API error:', errorMsg);
+                this.onError(errorMsg);
                 break;
         }
     }
 
-    private startAudioStream(stream: MediaStream) {
+    private async startAudioStream(stream: MediaStream) {
         this.audioContext = new AudioContext({ sampleRate: 24000 });
-        const source = this.audioContext.createMediaStreamSource(stream);
 
-        // Use ScriptProcessorNode (deprecated but widely supported)
-        // AudioWorklet would be preferred but is more complex to set up
-        this.audioProcessor = this.audioContext.createScriptProcessor(4096, 1, 1);
+        try {
+            await this.audioContext.audioWorklet.addModule('/audio-processor.js');
+        } catch (e) {
+            console.error('Failed to load audio-processor.js, falling back or failing', e);
+            throw new Error('Failed to load audio processor worklet');
+        }
 
-        this.audioProcessor.onaudioprocess = (e) => {
-            if (!this.isActive || this.ws?.readyState !== WebSocket.OPEN) return;
+        this.mediaStreamSource = this.audioContext.createMediaStreamSource(stream);
+        this.audioWorkletNode = new AudioWorkletNode(this.audioContext, 'audio-processor');
 
-            const inputData = e.inputBuffer.getChannelData(0);
-            const base64Audio = float32ToBase64Pcm16(inputData);
+        this.audioWorkletNode.port.onmessage = (event) => {
+            if (event.data.event === 'audio' && this.ws?.readyState === WebSocket.OPEN) {
+                const float32Buffer = event.data.buffer;
+                const base64Audio = float32ToBase64Pcm16(float32Buffer);
 
-            this.ws?.send(JSON.stringify({
-                type: 'input_audio_buffer.append',
-                audio: base64Audio,
-            }));
+                this.ws.send(JSON.stringify({
+                    type: 'input_audio_buffer.append',
+                    audio: base64Audio,
+                }));
+            }
         };
 
-        source.connect(this.audioProcessor);
-        this.audioProcessor.connect(this.audioContext.destination);
+        this.mediaStreamSource.connect(this.audioWorkletNode);
+        this.audioWorkletNode.connect(this.audioContext.destination);
     }
 
     disconnect() {
         this.isActive = false;
-        this.audioProcessor?.disconnect();
-        this.audioProcessor = null;
+        if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout);
+
+        this.mediaStreamSource?.disconnect();
+        this.audioWorkletNode?.disconnect();
         this.audioContext?.close();
+
+        this.mediaStreamSource = null;
+        this.audioWorkletNode = null;
         this.audioContext = null;
 
-        if (this.ws && this.ws.readyState !== WebSocket.CLOSED) {
+        if (this.ws) {
+            this.ws.onclose = null; // Prevent reconnect on manual disconnect
             this.ws.close();
         }
         this.ws = null;

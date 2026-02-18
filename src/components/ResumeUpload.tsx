@@ -107,15 +107,15 @@ export function ResumeUpload({ onUploadComplete, className }: ResumeUploadProps)
 
     if (resumeData) {
         return (
-            <div className={clsx("group relative overflow-hidden rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 transition-all hover:border-emerald-500/30", className)}>
+            <div className={clsx("group relative overflow-hidden rounded-xl border border-white/10 bg-white/5 p-4 transition-all hover:border-white/20", className)}>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 text-white ring-1 ring-white/20">
                             <FileText className="h-5 w-5" />
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-white">{t.uploaded}</p>
-                            <p className="text-xs text-neutral-400">{resumeData.fileName}</p>
+                            <p className="text-sm font-semibold text-white">{t.uploaded}</p>
+                            <p className="text-xs text-neutral-300">{resumeData.fileName}</p>
                         </div>
                     </div>
                     <button
@@ -131,9 +131,9 @@ export function ResumeUpload({ onUploadComplete, className }: ResumeUploadProps)
 
     return (
         <div className={className}>
-            <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-medium text-neutral-200">{t.title}</p>
-                <span className="text-xs text-neutral-500 bg-white/5 px-2 py-0.5 rounded">{t.subtitle}</span>
+            <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-semibold text-neutral-100">{t.title}</p>
+                <span className="text-xs text-neutral-400 bg-white/10 px-2.5 py-1 rounded-md">{t.subtitle}</span>
             </div>
 
             <motion.div
@@ -142,8 +142,8 @@ export function ResumeUpload({ onUploadComplete, className }: ResumeUploadProps)
                 onDragLeave={handleDragLeave}
                 onClick={() => fileInputRef.current?.click()}
                 animate={{
-                    borderColor: isDragging ? 'rgb(99 102 241)' : 'rgba(255, 255, 255, 0.1)',
-                    backgroundColor: isDragging ? 'rgba(99, 102, 241, 0.05)' : 'rgba(255, 255, 255, 0.02)',
+                    borderColor: isDragging ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.1)',
+                    backgroundColor: isDragging ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.02)',
                 }}
                 className="relative cursor-pointer rounded-xl border-2 border-dashed border-white/10 p-8 transition-all hover:border-white/20 hover:bg-white/[0.04]"
             >
@@ -159,8 +159,8 @@ export function ResumeUpload({ onUploadComplete, className }: ResumeUploadProps)
                     {isUploading ? (
                         <>
                             <div className="relative mb-4">
-                                <div className="absolute inset-0 animate-pulse rounded-full bg-indigo-500/20 blur-xl"></div>
-                                <Loader2 className="relative h-8 w-8 animate-spin text-indigo-400" />
+                                <div className="absolute inset-0 animate-pulse rounded-full bg-white/10 blur-xl"></div>
+                                <Loader2 className="relative h-8 w-8 animate-spin text-white" />
                             </div>
                             <p className="text-sm font-medium text-neutral-300">{t.processing}</p>
                         </>
@@ -169,10 +169,10 @@ export function ResumeUpload({ onUploadComplete, className }: ResumeUploadProps)
                             <div className="mb-4 rounded-full bg-neutral-900 p-3 ring-1 ring-white/10 shadow-lg">
                                 <Upload className="h-5 w-5 text-neutral-400" />
                             </div>
-                            <p className="mb-1 text-sm font-medium text-neutral-200">
-                                <span className="text-indigo-400 hover:underline">{t.browse}</span> {t.dragDrop}
+                            <p className="mb-2 text-sm font-semibold text-neutral-200">
+                                <span className="text-white hover:underline underline-offset-4">{t.browse}</span> {t.dragDrop}
                             </p>
-                            <p className="text-xs text-neutral-500">
+                            <p className="text-xs text-neutral-400">
                                 PDF, DOCX (Max 10MB)
                             </p>
                         </>

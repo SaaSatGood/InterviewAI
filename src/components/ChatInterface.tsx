@@ -88,7 +88,7 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
     return (
         <div className="flex flex-col h-screen bg-neutral-950 relative overflow-hidden">
             {/* Dynamic Background */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-indigo-950/20 via-neutral-950 to-neutral-950 pointer-events-none"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-neutral-900/20 via-neutral-950 to-neutral-950 pointer-events-none"></div>
             <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-neutral-950/80 to-transparent pointer-events-none z-10"></div>
 
             {/* Header */}
@@ -100,9 +100,9 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
                     <div>
                         <span className="text-lg font-semibold text-white tracking-tight">Interview<span className="text-neutral-500">AI</span></span>
                         <p className="text-xs text-neutral-400 hidden md:flex items-center gap-2">
-                            <span className="flex items-center gap-1.5"><MessageSquare className="w-3 h-3 text-indigo-400" /> {questionsAsked} {t('chat.questions')}</span>
+                            <span className="flex items-center gap-1.5"><MessageSquare className="w-3 h-3 text-neutral-400" /> {questionsAsked} {t('chat.questions')}</span>
                             <span className="w-1 h-1 rounded-full bg-neutral-700"></span>
-                            <span className="flex items-center gap-1.5"><User className="w-3 h-3 text-emerald-400" /> {userResponses} {t('chat.responses')}</span>
+                            <span className="flex items-center gap-1.5"><User className="w-3 h-3 text-neutral-400" /> {userResponses} {t('chat.responses')}</span>
                         </p>
                     </div>
                 </div>
@@ -146,7 +146,7 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
                                                 className={clsx(
                                                     "w-full flex flex-col items-start px-3 py-2.5 rounded-lg text-left transition-colors",
                                                     selectedModel === model.id
-                                                        ? "bg-indigo-500/20 text-indigo-200"
+                                                        ? "bg-white/10 text-white"
                                                         : "text-neutral-300 hover:bg-white/5"
                                                 )}
                                             >
@@ -246,10 +246,10 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
                     <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl py-3 px-6 text-center shadow-xl">
                         <p className="text-xs font-medium text-neutral-400 uppercase tracking-widest mb-1.5">Interview Context</p>
                         <p className="text-sm text-neutral-200">
-                            <span className="text-indigo-300 font-semibold">{userProfile.level}</span>{' '}
+                            <span className="text-white font-semibold">{userProfile.level}</span>{' '}
                             <span className="text-white font-bold">{userProfile.position}</span>
                             <span className="mx-2 text-neutral-600">|</span>
-                            <span className="text-neutral-300">{userProfile.stacks.slice(0, 3).join(', ')}{userProfile.stacks.length > 3 ? ` +${userProfile.stacks.length - 3}` : ''}</span>
+                            <span className="text-neutral-300">{(userProfile.stacks || []).slice(0, 3).join(', ')}{(userProfile.stacks || []).length > 3 ? ` +${(userProfile.stacks || []).length - 3}` : ''}</span>
                         </p>
                     </div>
                 </motion.div>
@@ -275,7 +275,7 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
                                     <div className={clsx(
                                         "w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg transition-transform hover:scale-105",
                                         msg.role === 'assistant'
-                                            ? 'bg-gradient-to-br from-neutral-800 to-neutral-900 border border-white/10 text-indigo-400'
+                                            ? 'bg-gradient-to-br from-neutral-800 to-neutral-900 border border-white/10 text-white'
                                             : 'bg-gradient-to-br from-white to-neutral-200 text-neutral-900'
                                     )}>
                                         {msg.role === 'assistant' ? <Bot className="w-5 h-5" /> : <User className="w-5 h-5" />}
@@ -296,14 +296,14 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
                                             className="absolute -top-3 -right-3 p-2 bg-neutral-800 border border-neutral-700 rounded-xl opacity-0 group-hover:opacity-100 transition-all text-neutral-400 hover:text-white hover:bg-neutral-700 shadow-lg scale-90 hover:scale-100"
                                             title="Copy"
                                         >
-                                            {copiedIdx === idx ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                                            {copiedIdx === idx ? <Check className="w-3.5 h-3.5 text-white" /> : <Copy className="w-3.5 h-3.5" />}
                                         </button>
                                     )}
 
                                     <div className={clsx(
                                         "prose prose-sm max-w-none leading-relaxed",
                                         msg.role === 'assistant'
-                                            ? 'prose-invert prose-p:text-neutral-300 prose-headings:text-white prose-strong:text-white prose-code:text-indigo-300 prose-code:bg-indigo-900/30 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-pre:bg-neutral-950 prose-pre:border prose-pre:border-white/10'
+                                            ? 'prose-invert prose-p:text-neutral-300 prose-headings:text-white prose-strong:text-white prose-code:text-neutral-200 prose-code:bg-neutral-800/50 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-pre:bg-neutral-950 prose-pre:border prose-pre:border-white/10'
                                             : 'prose-neutral prose-p:text-neutral-800'
                                     )}>
                                         {msg.role === 'assistant' ? (
@@ -345,7 +345,7 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
                                         {[0, 1, 2].map(i => (
                                             <motion.span
                                                 key={i}
-                                                className="w-2 h-2 bg-indigo-500 rounded-full"
+                                                className="w-2 h-2 bg-white rounded-full"
                                                 animate={{ y: [0, -6, 0], opacity: [0.5, 1, 0.5] }}
                                                 transition={{
                                                     duration: 0.8,
@@ -395,7 +395,7 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
             <div className="p-6 border-t border-white/5 bg-neutral-950/80 backdrop-blur-xl relative z-20">
                 <div className="max-w-4xl mx-auto">
                     <div className="relative group">
-                        <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500/30 to-purple-500/30 rounded-2xl blur opacity-0 group-focus-within:opacity-100 transition duration-500"></div>
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-white/20 to-neutral-500/20 rounded-2xl blur opacity-0 group-focus-within:opacity-100 transition duration-500"></div>
                         <div className="bg-neutral-900 rounded-2xl border border-white/10 relative flex items-end overflow-hidden shadow-xl transition-colors group-focus-within:border-white/20">
                             <textarea
                                 ref={inputRef}

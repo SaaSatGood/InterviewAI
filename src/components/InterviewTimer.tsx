@@ -21,7 +21,7 @@ export function InterviewTimer() {
     };
 
     return (
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg text-slate-600 font-mono text-sm">
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg text-slate-600 text-sm font-medium tabular-nums">
             <Timer className="w-4 h-4" />
             <span>{formatTime(seconds)}</span>
         </div>

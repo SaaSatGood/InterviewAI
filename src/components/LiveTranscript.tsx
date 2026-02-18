@@ -12,10 +12,10 @@ interface LiveTranscriptProps {
 }
 
 const SPEAKER_STYLES: Record<string, { label: string; color: string; bg: string; icon: string }> = {
-    recruiter: { label: 'Recruiter', color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20', icon: '🟦' },
-    candidate: { label: 'You', color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20', icon: '🟩' },
-    unknown: { label: 'Speaker', color: 'text-neutral-400', bg: 'bg-neutral-500/10 border-neutral-500/20', icon: '⬜' },
-    overlap: { label: 'Overlap', color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20', icon: '🟨' },
+    recruiter: { label: 'Prospect/Lead', color: 'text-indigo-400', bg: 'bg-indigo-500/10 border-indigo-500/20', icon: '👤' },
+    candidate: { label: 'Closer (You)', color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20', icon: '🛡️' },
+    unknown: { label: 'System', color: 'text-neutral-400', bg: 'bg-neutral-500/10 border-neutral-500/20', icon: '⚪' },
+    overlap: { label: 'Overlap', color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20', icon: '⚠️' },
 };
 
 export function LiveTranscript({ segments, currentPartial, currentSpeaker }: LiveTranscriptProps) {
@@ -29,26 +29,32 @@ export function LiveTranscript({ segments, currentPartial, currentSpeaker }: Liv
     }, [segments, currentPartial]);
 
     const formatTime = (ts: number) => {
+        // Return placeholder during SSR to avoid hydration mismatch
+        if (typeof window === 'undefined') return "00:00:00";
         const date = new Date(ts);
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     };
 
     return (
         <div className="flex flex-col h-full">
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-neutral-800">
-                <span className="text-sm font-medium text-neutral-300">📝 Transcript</span>
-                <span className="text-xs text-neutral-500">{segments.length} segments</span>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-white/[0.03] backdrop-blur-md sticky top-0 z-20">
+                <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-neutral-400 uppercase tracking-widest">Live Intel</span>
+                    <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                </div>
+                <span className="text-[10px] text-neutral-600 font-semibold tracking-wider uppercase">{segments.length} LOGS</span>
             </div>
 
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
-                {segments.length === 0 && !currentPartial && (
-                    <div className="flex items-center justify-center h-full">
-                        <p className="text-neutral-500 text-sm text-center">
-                            Waiting for speech...<br />
-                            <span className="text-xs text-neutral-600">Speak to see the transcript here</span>
-                        </p>
+                <div className="flex flex-col items-center justify-center h-full p-8 text-center space-y-4">
+                    <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                        <span className="text-xl animate-pulse">📡</span>
                     </div>
-                )}
+                    <div>
+                        <p className="text-neutral-300 font-medium text-xs uppercase tracking-widest">Awaiting Capture</p>
+                        <p className="text-neutral-500 text-xs mt-1 max-w-[200px]">Speak or wait for the prospect to start the conversation.</p>
+                    </div>
+                </div>
 
                 <AnimatePresence>
                     {segments.map(seg => {
@@ -56,9 +62,9 @@ export function LiveTranscript({ segments, currentPartial, currentSpeaker }: Liv
                         return (
                             <motion.div
                                 key={seg.id}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className={`p-3 rounded-lg border ${style.bg}`}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className={`p-3 rounded-xl border glass-card ${style.bg}`}
                             >
                                 <div className="flex items-center gap-2 mb-1">
                                     <span className="text-xs">{style.icon}</span>

@@ -84,15 +84,31 @@ export function useAudioCapture(): AudioCaptureReturn {
         try {
             setState(prev => ({ ...prev, error: null, mode, hasSystemAudio: false }));
 
-            // Resume or create AudioContext
+            // Resume or create AudioContext with fallback
             let ctx = audioContextRef.current;
             if (!ctx || ctx.state === 'closed') {
-                ctx = new AudioContext({ sampleRate: 48000 }); // Higher sample rate for better quality
+                try {
+                    ctx = new AudioContext({ sampleRate: 48000 });
+                } catch {
+                    // Fallback for browsers that don't support 48kHz
+                    try {
+                        ctx = new AudioContext();
+                    } catch (ctxErr) {
+                        const msg = ctxErr instanceof Error ? ctxErr.message : 'Audio not supported';
+                        setState(prev => ({ ...prev, error: `⚠️ ${msg}. Try using Chrome or Edge.`, isCapturing: false }));
+                        return null;
+                    }
+                }
                 audioContextRef.current = ctx;
             }
 
             if (ctx.state === 'suspended') {
-                await ctx.resume();
+                try {
+                    await ctx.resume();
+                } catch {
+                    setState(prev => ({ ...prev, error: '⚠️ Audio blocked by browser. Click the page first and try again.' }));
+                    return null;
+                }
             }
 
             const dest = ctx.createMediaStreamDestination();

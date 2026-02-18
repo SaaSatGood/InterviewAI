@@ -12,8 +12,8 @@ export interface WhisperResult {
 }
 
 /**
- * Transcribe audio using OpenAI Whisper REST API
- * This is a fallback for users without Realtime API access
+ * Transcribe audio using the internal Whisper proxy (/api/ai/whisper).
+ * The proxy forwards the request to OpenAI server-side.
  */
 export async function transcribeWithWhisper(
     audioBlob: Blob,
@@ -21,23 +21,20 @@ export async function transcribeWithWhisper(
 ): Promise<WhisperResult> {
     const formData = new FormData();
     formData.append('file', audioBlob, 'audio.webm');
-    formData.append('model', 'whisper-1');
+    formData.append('apiKey', config.apiKey);
 
     if (config.language) {
         formData.append('language', config.language);
     }
 
-    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+    const response = await fetch('/api/ai/whisper', {
         method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${config.apiKey}`,
-        },
         body: formData,
     });
 
     if (!response.ok) {
         const error = await response.json().catch(() => ({}));
-        throw new Error(error.error?.message || `Whisper API error: ${response.status}`);
+        throw new Error(error.error || `Whisper proxy error: ${response.status}`);
     }
 
     const result = await response.json();

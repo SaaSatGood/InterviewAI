@@ -1,18 +1,40 @@
-export const POSITIONS = [
-    { id: 'frontend', label: 'Frontend Developer', icon: 'Layout' },
-    { id: 'backend', label: 'Backend Developer', icon: 'Server' },
-    { id: 'fullstack', label: 'Full Stack Developer', icon: 'Layers' },
-    { id: 'mobile', label: 'Mobile Developer', icon: 'Smartphone' },
-    { id: 'devops', label: 'DevOps Engineer', icon: 'Cloud' },
-    { id: 'datascience', label: 'Data Scientist', icon: 'Database' },
-    { id: 'ml-engineer', label: 'Machine Learning Engineer', icon: 'Brain' },
-    { id: 'qa', label: 'QA Engineer', icon: 'TestTube' },
-    { id: 'security', label: 'Security Engineer', icon: 'Shield' },
-    { id: 'sre', label: 'Site Reliability Engineer', icon: 'Activity' },
-    { id: 'architect', label: 'Software Architect', icon: 'Building' },
-    { id: 'product-manager', label: 'Product Manager', icon: 'Briefcase' },
-    { id: 'game-developer', label: 'Game Developer', icon: 'Gamepad' },
-    { id: 'blockchain', label: 'Blockchain Developer', icon: 'Link' },
+export type PositionCategory = 'tech' | 'sales' | 'support';
+
+export interface Position {
+    id: string;
+    label: string;
+    icon: string;
+    category: PositionCategory;
+}
+
+export const POSITIONS: Position[] = [
+    // Tech
+    { id: 'frontend', label: 'Frontend Developer', icon: 'Layout', category: 'tech' },
+    { id: 'backend', label: 'Backend Developer', icon: 'Server', category: 'tech' },
+    { id: 'fullstack', label: 'Full Stack Developer', icon: 'Layers', category: 'tech' },
+    { id: 'mobile', label: 'Mobile Developer', icon: 'Smartphone', category: 'tech' },
+    { id: 'devops', label: 'DevOps Engineer', icon: 'Cloud', category: 'tech' },
+    { id: 'datascience', label: 'Data Scientist', icon: 'Database', category: 'tech' },
+    { id: 'ml-engineer', label: 'Machine Learning Engineer', icon: 'Brain', category: 'tech' },
+    { id: 'qa', label: 'QA Engineer', icon: 'TestTube', category: 'tech' },
+    { id: 'security', label: 'Security Engineer', icon: 'Shield', category: 'tech' },
+    { id: 'sre', label: 'Site Reliability Engineer', icon: 'Activity', category: 'tech' },
+    { id: 'architect', label: 'Software Architect', icon: 'Building', category: 'tech' },
+    { id: 'product-manager', label: 'Product Manager', icon: 'Briefcase', category: 'tech' },
+    { id: 'game-developer', label: 'Game Developer', icon: 'Gamepad', category: 'tech' },
+    { id: 'blockchain', label: 'Blockchain Developer', icon: 'Link', category: 'tech' },
+
+    // Sales
+    { id: 'sdr', label: 'Sales Development Rep (SDR)', icon: 'Target', category: 'sales' },
+    { id: 'bdr', label: 'Business Development Rep (BDR)', icon: 'TrendingUp', category: 'sales' },
+    { id: 'account-executive', label: 'Account Executive', icon: 'Briefcase', category: 'sales' },
+    { id: 'sales-manager', label: 'Sales Manager', icon: 'Users', category: 'sales' },
+    { id: 'customer-success', label: 'Customer Success Manager', icon: 'Heart', category: 'sales' },
+
+    // Support
+    { id: 'customer-support', label: 'Customer Support Rep', icon: 'Headphones', category: 'support' },
+    { id: 'technical-support', label: 'Technical Support Engineer', icon: 'Wrench', category: 'support' },
+    { id: 'support-lead', label: 'Support Lead/Manager', icon: 'Activity', category: 'support' },
 ] as const;
 
 export const STACKS: Record<string, { id: string; label: string; category?: string }[]> = {
@@ -194,6 +216,59 @@ export const STACKS: Record<string, { id: string; label: string; category?: stri
         { id: 'rust-blockchain', label: 'Rust (Solana, Substrate)' },
         { id: 'nft', label: 'NFTs / ERC Standards' },
     ],
+
+    // Sales Stacks
+    sdr: [
+        { id: 'outbound', label: 'Outbound Prospecting', category: 'Methodology' },
+        { id: 'cold-calling', label: 'Cold Calling & Emailing', category: 'Methodology' },
+        { id: 'salesforce', label: 'Salesforce CRM', category: 'Tools' },
+        { id: 'hubspot', label: 'HubSpot CRM', category: 'Tools' },
+        { id: 'outreach', label: 'Outreach / Salesloft', category: 'Tools' },
+        { id: 'linkedin-sales', label: 'LinkedIn Sales Navigator', category: 'Tools' },
+        { id: 'objection-handling', label: 'Objection Handling', category: 'Methodology' },
+    ],
+    bdr: [
+        { id: 'lead-generation', label: 'Lead Generation Strategies', category: 'Methodology' },
+        { id: 'market-analysis', label: 'Market Analysis', category: 'Methodology' },
+        { id: 'crm-mastery', label: 'CRM Mastery', category: 'Tools' },
+        { id: 'strategic-prospecting', label: 'Strategic Prospecting', category: 'Methodology' },
+    ],
+    'account-executive': [
+        { id: 'closing-techniques', label: 'Closing Techniques', category: 'Methodology' },
+        { id: 'demo-skills', label: 'Product Demo Skills', category: 'Methodology' },
+        { id: 'negotiation', label: 'Advanced Negotiation', category: 'Methodology' },
+        { id: 'pipeline-management', label: 'Pipeline Management', category: 'Process' },
+    ],
+    'sales-manager': [
+        { id: 'sales-strategy', label: 'Sales Strategy & Planning', category: 'Management' },
+        { id: 'coaching', label: 'Sales Coaching & Mentoring', category: 'Management' },
+        { id: 'forecasting', label: 'Sales Forecasting', category: 'Analytics' },
+    ],
+    'customer-success': [
+        { id: 'onboarding', label: 'Customer Onboarding', category: 'Success' },
+        { id: 'retention', label: 'Churn Reduction & Retention', category: 'Success' },
+        { id: 'upselling', label: 'Upselling & Cross-selling', category: 'Sales' },
+        { id: 'gainsight', label: 'Gainsight / Success Tools', category: 'Tools' },
+    ],
+
+    // Support Stacks
+    'customer-support': [
+        { id: 'ticketing', label: 'Ticketing Systems (Zendesk, Freshdesk)', category: 'Tools' },
+        { id: 'active-listening', label: 'Active Listening & Empathy', category: 'Skills' },
+        { id: 'problem-escalation', label: 'Problem Escalation Process', category: 'Process' },
+        { id: 'written-comm', label: 'Business Writing & Chat Etiquette', category: 'Skills' },
+    ],
+    'technical-support': [
+        { id: 'troubleshooting', label: 'Technical Troubleshooting', category: 'Skills' },
+        { id: 'api-basics', label: 'API Basics (Postman, REST)', category: 'Technical' },
+        { id: 'logging-tools', label: 'Logging Tools (LogRocket, Sentry)', category: 'Technical' },
+        { id: 'kb-creation', label: 'Knowledge Base Content Creation', category: 'Process' },
+    ],
+    'support-lead': [
+        { id: 'sla-management', label: 'SLA & KPI Management', category: 'Management' },
+        { id: 'team-leadership', label: 'Team Leadership', category: 'Management' },
+        { id: 'csat-metrics', label: 'CSAT / NPS Improvement', category: 'Analytics' },
+    ],
 };
 
 // Soft Skills & Business Topics - Available for all positions
@@ -240,23 +315,37 @@ export const DIFFICULTIES = [
 
 // Interviewer names by domain
 export const INTERVIEWER_NAMES: Record<string, string[]> = {
-    frontend: ['Sarah Chen', 'Marcus Williams', 'Priya Sharma'],
-    backend: ['James Rodriguez', 'Elena Kowalski', 'Raj Patel'],
-    fullstack: ['Alex Thompson', 'Maria Santos', 'David Kim'],
-    mobile: ['Jennifer Liu', 'Carlos Mendez', 'Akiko Tanaka'],
-    devops: ['Michael Brown', 'Anastasia Volkov', 'Ahmed Hassan'],
-    datascience: ['Dr. Emily Watson', 'Dr. Hiroshi Yamamoto', 'Dr. Sofia Andersen'],
-    'ml-engineer': ['Dr. Nathan Park', 'Dr. Isabella Rossi', 'Dr. Wei Zhang'],
-    qa: ['Laura Mitchell', 'Roberto Silva', 'Fatima Al-Rashid'],
-    security: ['John Black', 'Yuki Nakamura', 'Hans Mueller'],
-    sre: ['Daniel O\'Brien', 'Mei Lin', 'Viktor Petrov'],
-    architect: ['Richard Sterling', 'Catherine Dubois', 'Sanjay Gupta'],
-    'product-manager': ['Jessica Moore', 'Thomas Andersson', 'Lisa Chang'],
+    // Tech positions
+    frontend: ['Alex Rivera', 'Samantha Chen', 'Jordan Lee'],
+    backend: ['Marcus Johnson', 'Priya Patel', 'Chris Thompson'],
+    fullstack: ['Sarah Martinez', 'James Kim', 'Laura Singh'],
+    mobile: ['Ryan Cooper', 'Aisha Williams', 'Brandon Park'],
+    devops: ['Mike Torres', 'Nina Gupta', 'Eric Hansen'],
+    datascience: ['Rachel Green', 'Omar Khan', 'Diana Chang'],
+    'ml-engineer': ['Andrew Ng-style', 'Fatima Al-Rashid', 'Lucas Weber'],
+    qa: ['Jennifer Walsh', 'Carlos Mendez', 'Tina Park'],
+    security: ['Bruce Wayne', 'Natasha Romanova', 'Alan Turing-style'],
+    sre: ['Lisa Chang', 'Dmitri Petrov', 'Hannah Schmidt'],
+    architect: ['Robert Martin-style', 'Sophia Anderson', 'Wei Zhang'],
+    'product-manager': ['Jessica Taylor', 'Nathan Brooks', 'Maria Garcia'],
+    // Niche tech
     'game-developer': ['Jake Wilson', 'Sakura Ito', 'Dylan Foster'],
     blockchain: ['Vitalik-style', 'Amir Goldstein', 'Cynthia Dwork'],
+    // Sales
+    sdr: ['Tyler Reed', 'Megan Fisher'],
+    bdr: ['Kevin Brooks', 'Anna White'],
+    'account-executive': ['Robert Moore', 'Sarah Jenkins'],
+    'sales-manager': ['Thomas Hunt', 'Patricia Bell'],
+    'customer-success': ['Emily Carter', 'David Ross'],
+    // Support
+    'customer-support': ['Karen Knight', 'Steven Page'],
+    'technical-support': ['Daniel Wright', 'Michelle Scott'],
+    'support-lead': ['Mark Hall', 'Sandra Young'],
 };
 
+const DEFAULT_INTERVIEWER_NAMES = ['Alex Thompson', 'Sarah Kim', 'Michael Chen'];
+
 export function getRandomInterviewerName(position: string): string {
-    const names = INTERVIEWER_NAMES[position] || INTERVIEWER_NAMES['fullstack'];
+    const names = INTERVIEWER_NAMES[position] || DEFAULT_INTERVIEWER_NAMES;
     return names[Math.floor(Math.random() * names.length)];
 }

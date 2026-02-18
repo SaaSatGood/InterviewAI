@@ -5,7 +5,7 @@ import { generateSystemPrompt, generateReportPrompt } from '@/lib/prompts';
 import { Message, InterviewHistoryEntry } from '@/types';
 
 export function useInterview() {
-    const { getActiveKey, userProfile, language, resumeData, jobContext, addToHistory } = useAppStore();
+    const { getActiveKey, userProfile, language, resumeData, jobContext, addToHistory, selectedModel } = useAppStore();
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -34,7 +34,8 @@ export function useInterview() {
                 apiKey: activeKey.key,
                 provider: activeKey.provider,
                 messages: newMessages,
-                systemPrompt
+                systemPrompt,
+                model: selectedModel || undefined
             });
 
             const assistantMessage: Message = { role: 'assistant', content: responseContent, timestamp: Date.now() };
@@ -44,7 +45,7 @@ export function useInterview() {
         } finally {
             setIsLoading(false);
         }
-    }, [activeKey, userProfile, messages, language, resumeData, jobContext]);
+    }, [activeKey, userProfile, messages, language, resumeData, jobContext, selectedModel]);
 
     // Initial greeting
     useEffect(() => {
@@ -61,7 +62,8 @@ export function useInterview() {
                         systemPrompt: generateSystemPrompt(userProfile, language, {
                             resumeData,
                             jobContext,
-                        })
+                        }),
+                        model: selectedModel || undefined
                     });
 
                     setMessages([{ role: 'assistant', content: responseContent, timestamp: Date.now() }]);
@@ -74,7 +76,7 @@ export function useInterview() {
 
             startInterview();
         }
-    }, [activeKey, userProfile, language, resumeData, jobContext]);
+    }, [activeKey, userProfile, language, resumeData, jobContext, selectedModel]);
 
     const finishInterview = async () => {
         if (!activeKey || !userProfile || messages.length === 0) return;
@@ -88,7 +90,8 @@ export function useInterview() {
                 apiKey: activeKey.key,
                 provider: activeKey.provider,
                 messages,
-                systemPrompt: prompt
+                systemPrompt: prompt,
+                model: selectedModel || undefined
             });
 
             const { setReport } = useAppStore.getState();

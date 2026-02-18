@@ -11,12 +11,24 @@ interface CoachTipsProps {
     error?: string | null;
 }
 
-const TYPE_CONFIG: Record<string, { icon: string; label: string; color: string }> = {
-    technical: { icon: '🔧', label: 'Technical', color: 'text-cyan-400' },
-    behavioral: { icon: '🧠', label: 'Behavioral', color: 'text-purple-400' },
-    system_design: { icon: '📊', label: 'System Design', color: 'text-amber-400' },
-    experience: { icon: '💼', label: 'Experience', color: 'text-emerald-400' },
-    silence_tip: { icon: '💡', label: 'Tip', color: 'text-yellow-400' },
+const TYPE_CONFIG: Record<string, { icon: string; label: string; color: string; gradient: string }> = {
+    technical: { icon: '🔧', label: 'Technical', color: 'text-cyan-400', gradient: 'from-cyan-500/10' },
+    behavioral: { icon: '🧠', label: 'Behavioral', color: 'text-purple-400', gradient: 'from-purple-500/10' },
+    system_design: { icon: '📊', label: 'System Design', color: 'text-amber-400', gradient: 'from-amber-500/10' },
+    experience: { icon: '💼', label: 'Experience', color: 'text-emerald-400', gradient: 'from-emerald-500/10' },
+    silence_tip: { icon: '💡', label: 'Tip', color: 'text-yellow-400', gradient: 'from-yellow-500/10' },
+
+    // Sales categories
+    discovery: { icon: '🤝', label: 'Discovery', color: 'text-indigo-400', gradient: 'from-indigo-500/10' },
+    objection: { icon: '🎯', label: 'Objection', color: 'text-red-300', gradient: 'from-red-500/20 shadow-red-500/10' },
+    closing: { icon: '💼', label: 'Closing', color: 'text-emerald-400', gradient: 'from-emerald-500/20 shadow-emerald-500/10' },
+    value_prop: { icon: '📊', label: 'Value Prop', color: 'text-amber-400', gradient: 'from-amber-500/10' },
+
+    // Support categories
+    resolution: { icon: '✅', label: 'Resolution', color: 'text-emerald-400', gradient: 'from-emerald-500/10' },
+    empathy: { icon: '❤️', label: 'Empathy', color: 'text-pink-400', gradient: 'from-pink-500/10' },
+    escalation: { icon: '⚠️', label: 'Escalation', color: 'text-orange-400', gradient: 'from-orange-500/20' },
+    knowledge: { icon: '📚', label: 'Knowledge', color: 'text-blue-400', gradient: 'from-blue-500/10' },
 };
 
 const METHOD_BADGE: Record<string, { label: string; color: string }> = {
@@ -36,10 +48,15 @@ export function CoachTips({ tips, isAnalyzing, error }: CoachTipsProps) {
 
     return (
         <div className="flex flex-col h-full">
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-neutral-800">
-                <span className="text-sm font-medium text-neutral-300">💡 AI Coach</span>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-white/[0.03] backdrop-blur-md sticky top-0 z-20">
+                <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-neutral-400 uppercase tracking-widest">AI Intelligence</span>
+                    <span className="flex h-1 w-1 rounded-full bg-indigo-500" />
+                </div>
                 {isAnalyzing && (
-                    <span className="text-xs text-yellow-400 animate-pulse">analisando...</span>
+                    <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-indigo-400 font-bold animate-pulse uppercase tracking-tighter">Analyzing deal...</span>
+                    </div>
                 )}
             </div>
 
@@ -51,14 +68,15 @@ export function CoachTips({ tips, isAnalyzing, error }: CoachTipsProps) {
             )}
 
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
-                {tips.length === 0 && !isAnalyzing && (
-                    <div className="flex items-center justify-center h-full">
-                        <p className="text-neutral-500 text-sm text-center">
-                            Tips will appear here<br />
-                            <span className="text-xs text-neutral-600">when the interviewer asks a question</span>
-                        </p>
+                <div className="flex flex-col items-center justify-center h-full p-8 text-center space-y-4">
+                    <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shadow-indigo-500/5 shadow-2xl">
+                        <span className="text-2xl">🧠</span>
                     </div>
-                )}
+                    <div>
+                        <p className="text-neutral-300 font-bold text-sm tracking-tight">Intelligence Standby</p>
+                        <p className="text-neutral-500 text-xs mt-1.5 max-w-[240px]">The AI is monitoring the deal context in real-time. Dicas de fechamento e contorno de objeções aparecerão aqui.</p>
+                    </div>
+                </div>
 
                 <AnimatePresence>
                     {tips.map((tip, idx) => {
@@ -66,11 +84,14 @@ export function CoachTips({ tips, isAnalyzing, error }: CoachTipsProps) {
                         return (
                             <motion.div
                                 key={idx}
-                                initial={{ opacity: 0, x: 20, scale: 0.95 }}
-                                animate={{ opacity: 1, x: 0, scale: 1 }}
-                                transition={{ duration: 0.3 }}
-                                className="p-4 rounded-xl bg-gradient-to-br from-neutral-800/80 to-neutral-900/80 border border-neutral-700/50 shadow-lg"
+                                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                transition={{ type: 'spring', damping: 20, stiffness: 100 }}
+                                className={`p-5 rounded-2xl bg-gradient-to-br ${config.gradient} to-transparent border border-white/5 backdrop-blur-md shadow-2xl relative overflow-hidden group`}
                             >
+                                <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                                    <span className="text-4xl grayscale leading-none">{config.icon}</span>
+                                </div>
                                 {/* Header */}
                                 <div className="flex items-center justify-between mb-3">
                                     <div className="flex items-center gap-2">
@@ -94,11 +115,13 @@ export function CoachTips({ tips, isAnalyzing, error }: CoachTipsProps) {
                                 )}
 
                                 {/* Tips */}
-                                <ul className="space-y-2">
+                                <ul className="space-y-3 relative z-10">
                                     {tip.tips.map((t, i) => (
-                                        <li key={i} className="flex items-start gap-2">
-                                            <span className="text-emerald-400 mt-0.5 text-xs">✅</span>
-                                            <span className="text-sm text-neutral-200">{t}</span>
+                                        <li key={i} className="flex items-start gap-3">
+                                            <div className="flex-shrink-0 mt-1 w-4 h-4 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                            </div>
+                                            <span className="text-sm text-neutral-100 font-medium leading-relaxed">{t}</span>
                                         </li>
                                     ))}
                                 </ul>

@@ -36,26 +36,26 @@ const CONTEXT_TEMPLATES = {
 // Language-specific prompt templates
 const LANGUAGE_CONFIG = {
   en: {
-    intro: (name: string, position: string, level: string, stacks: string) =>
-      `You are ${name}, a Senior ${position} with 10+ years of experience at a top tech company.
-You are conducting a technical interview for a ${level} ${position} position, focused on ${stacks}.`,
+    intro: (name: string, position: string, level: string, stacks: string, category: string) =>
+      `You are ${name}, a highly experienced ${position} with 15+ years of success in your field.
+You are conducting a professional interview for a ${level} ${position} position, focused on ${stacks}.`,
     mandatory: `## MANDATORY LANGUAGE
 **You MUST respond in ENGLISH. ALL your messages, questions, and feedback must be in English. This is mandatory and cannot be changed.**`,
-    persona: (name: string, position: string) => `## YOUR PERSONA
+    persona: (name: string, position: string, category: string) => `## YOUR PERSONA
 - Name: ${name}
-- Role: Senior ${position} / Technical Interviewer
+- Role: Senior ${position} / Professional Interviewer
 - Style: Professional, warm but rigorous, genuinely curious about the candidate's experience
 - NEVER mention you are an AI. You are a human interviewer.`,
     scope: (stacks: string) => `## INTERVIEW SCOPE
 ### Technical Stack Focus
 ${stacks}`,
-    extendedTopics: (soft: string, business: string, modern: string) => `### Additional Interview Topics
+    extendedTopics: (soft: string, business: string, modern: string, category: string) => `### Additional Interview Topics
 The candidate has requested to be evaluated on these complementary competencies:
 ${soft ? `- **Soft Skills**: ${soft}` : ''}
-${business ? `- **Business Logic**: ${business}` : ''}
-${modern ? `- **Modern Practices**: ${modern}` : ''}
+${business ? `- **Business/Strategic Logic**: ${business}` : ''}
+${modern ? `- **Modern Practices/Methodologies**: ${modern}` : ''}
 
-Include questions on these topics throughout the interview to assess the candidate as a complete, modern developer.`,
+Include questions on these topics throughout the interview to assess the candidate as a complete, modern professional.`,
     structure: (hasExtended: boolean) => `## INTERVIEW STRUCTURE
 1. **Opening (1 message)**: Introduce yourself by name, welcome the candidate warmly, explain the interview format briefly, then ask them to introduce themselves.
 2. **Technical Questions (5-8 questions)**: Progressive difficulty. Start easier, then increase complexity. Cover multiple technologies from their selected stack.
@@ -97,26 +97,26 @@ ${hasExtended ? '4. **Complementary Topics (2-3 questions)**: Include questions 
 Begin the interview by introducing yourself and asking the candidate to tell you about themselves.`,
   },
   pt: {
-    intro: (name: string, position: string, level: string, stacks: string) =>
-      `Você é ${name}, um(a) ${position} Sênior com mais de 10 anos de experiência em uma empresa de tecnologia de ponta.
-Você está conduzindo uma entrevista técnica para uma vaga de ${position} nível ${level}, focada em ${stacks}.`,
+    intro: (name: string, position: string, level: string, stacks: string, category: string) =>
+      `Você é ${name}, um(a) ${position} altamente experiente com mais de 15 anos de sucesso em sua área.
+Você está conduzindo uma entrevista profissional para uma vaga de ${position} nível ${level}, focada em ${stacks}.`,
     mandatory: `## IDIOMA OBRIGATÓRIO
 **VOCÊ DEVE RESPONDER SEMPRE EM PORTUGUÊS BRASILEIRO. TODAS as suas mensagens, perguntas e feedbacks devem ser em português. Isso é obrigatório e não pode ser alterado em nenhuma hipótese.**`,
-    persona: (name: string, position: string) => `## SUA PERSONA
+    persona: (name: string, position: string, category: string) => `## SUA PERSONA
 - Nome: ${name}
-- Cargo: ${position} Sênior / Entrevistador(a) Técnico(a)
+- Cargo: ${position} Sênior / Entrevistador(a) Profissional
 - Estilo: Profissional, acolhedor mas rigoroso, genuinamente curioso sobre a experiência do candidato
-- NUNCA mencione que você é uma IA. Você é um entrevistador humano.`,
+- NUNCA mencione que você é uma IA. Você é um entrevistador(a) humano(a).`,
     scope: (stacks: string) => `## ESCOPO DA ENTREVISTA
 ### Foco Técnico
 ${stacks}`,
-    extendedTopics: (soft: string, business: string, modern: string) => `### Tópicos Adicionais da Entrevista
+    extendedTopics: (soft: string, business: string, modern: string, category: string) => `### Tópicos Adicionais da Entrevista
 O candidato solicitou ser avaliado nestas competências complementares:
 ${soft ? `- **Soft Skills**: ${soft}` : ''}
-${business ? `- **Lógica de Negócios**: ${business}` : ''}
-${modern ? `- **Práticas Modernas**: ${modern}` : ''}
+${business ? `- **Lógica de Negócios/Estratégica**: ${business}` : ''}
+${modern ? `- **Práticas/Metodologias Modernas**: ${modern}` : ''}
 
-Inclua perguntas sobre esses tópicos ao longo da entrevista para avaliar o candidato como um desenvolvedor completo e moderno.`,
+Inclua perguntas sobre esses tópicos ao longo da entrevista para avaliar o candidato como um profissional completo e moderno.`,
     structure: (hasExtended: boolean) => `## ESTRUTURA DA ENTREVISTA
 1. **Abertura (1 mensagem)**: Apresente-se pelo nome, dê boas-vindas ao candidato, explique brevemente o formato da entrevista e peça para ele se apresentar.
 2. **Perguntas Técnicas (5-8 perguntas)**: Dificuldade progressiva. Comece mais fácil, depois aumente a complexidade. Cubra múltiplas tecnologias do stack selecionado.
@@ -230,11 +230,12 @@ export function generateSystemPrompt(
   language: Language = 'en',
   context?: PromptContext
 ): string {
-  const positionLabel = POSITIONS.find(p => p.id === profile.position)?.label || profile.position;
-  const stackLabels = profile.stacks.map(stackId =>
+  const positionLabel = POSITIONS.find(p => p.id === profile.position)?.label || profile.position || 'Developer';
+  const safeStacks = Array.isArray(profile.stacks) ? profile.stacks : (profile.stacks ? [profile.stacks] : ['general']);
+  const stackLabels = safeStacks.map(stackId =>
     STACKS[profile.position as keyof typeof STACKS]?.find(s => s.id === stackId)?.label || stackId
-  ).join(', ');
-  const difficultyLabel = DIFFICULTIES.find(d => d.id === profile.level)?.label || profile.level;
+  ).join(', ') || 'General';
+  const difficultyLabel = DIFFICULTIES.find(d => d.id === profile.level)?.label || profile.level || 'mid-level';
   const interviewerName = getRandomInterviewerName(profile.position);
 
   const softSkillLabels = profile.softSkills?.map(id =>
@@ -277,15 +278,15 @@ ${ctxTemplates.instruction}
   }
 
   return `
-${config.intro(interviewerName, positionLabel, difficultyLabel, stackLabels)}
+${config.intro(interviewerName, positionLabel, difficultyLabel, stackLabels, profile.category)}
 
 ${config.mandatory}
 
-${config.persona(interviewerName, positionLabel)}
+${config.persona(interviewerName, positionLabel, profile.category)}
 
 ${config.scope(stackLabels)}
 
-${hasExtendedTopics ? config.extendedTopics(softSkillLabels, businessTopicLabels, modernPracticeLabels) : ''}
+${hasExtendedTopics ? config.extendedTopics(softSkillLabels, businessTopicLabels, modernPracticeLabels, profile.category) : ''}
 ${contextSection}
 ${config.structure(hasExtendedTopics)}
 
@@ -302,12 +303,12 @@ ${config.start}
 const REPORT_LANGUAGE_CONFIG = {
   en: {
     intro: (level: string, position: string, stacks: string) =>
-      `You are an elite Technical Hiring Director at a FAANG-level company with 20+ years of experience evaluating thousands of candidates.
-You have just conducted a technical interview for a ${level} ${position} position focused on ${stacks}.
+      `You are an elite Professional Hiring Director at a top global company with 20+ years of experience evaluating thousands of candidates across various departments.
+You have just conducted an interview for a ${level} ${position} position focused on ${stacks}.
 
 **IMPORTANT: Your ENTIRE report MUST be written in ENGLISH. All analyses, feedbacks, suggestions, and study plans must be in English.**`,
     mission: `## YOUR MISSION
-Provide the most COMPREHENSIVE, PRECISE, and ACTIONABLE evaluation possible. This report should be so detailed that the candidate knows EXACTLY what to study and improve.`,
+Provide a BRUTALLY DIRECT, AGGRESSIVE, and STRATEGIC evaluation. Your goal is to transform the candidate into a high-performance closer. Do not sugarcoat. Focus on conversion, impact, and "winning" the interview.`,
     json: `## OUTPUT FORMAT (STRICT JSON)
 {
   "score": number,
@@ -327,21 +328,21 @@ Provide the most COMPREHENSIVE, PRECISE, and ACTIONABLE evaluation possible. Thi
   "nextInterviewTips": ["string"]
 }`,
     instructions: `## CRITICAL INSTRUCTIONS
-1. Be BRUTALLY HONEST but CONSTRUCTIVE
-2. Quote EXACT phrases from the candidate's answers when possible
-3. Every weakness MUST have a corresponding study plan item
-4. Be specific about resources: mention actual documentation, courses, or books
+1. Be BRUTALLY HONEST and sales-focused.
+2. Quote EXACT phrases and explain why they failed to "sell" the candidate.
+3. Every weakness MUST have a corresponding high-performance fix.
+4. Be specific about resources: focus on books like "Never Split the Difference" or high-impact methodologies.
 5. Return ONLY valid JSON - no markdown code blocks or extra text
 6. **ALL content must be in ENGLISH**`,
   },
   pt: {
     intro: (level: string, position: string, stacks: string) =>
-      `Você é um Diretor de Contratação Técnica de elite em uma empresa nível FAANG com mais de 20 anos de experiência avaliando milhares de candidatos.
-Você acabou de conduzir uma entrevista técnica para uma vaga de ${position} nível ${level} focada em ${stacks}.
+      `Você é um Diretor de Contratação Profissional de elite em uma empresa global de primeira linha, com mais de 20 anos de experiência avaliando milhares de candidatos.
+Você acabou de conduzir uma entrevista profissional para uma vaga de ${position} nível ${level} focada em ${stacks}.
 
 **IMPORTANTE: TODO o seu relatório DEVE ser escrito em PORTUGUÊS BRASILEIRO. Todas as análises, feedbacks, sugestões e planos de estudo devem estar em português.**`,
     mission: `## SUA MISSÃO
-Forneça a avaliação mais ABRANGENTE, PRECISA e ACIONÁVEL possível. Este relatório deve ser tão detalhado que o candidato saiba EXATAMENTE o que estudar e melhorar.`,
+Forneça uma avaliação BRUTALMENTE DIRETA, AGGRESSIVA e ESTRATÉGICA. Seu objetivo é transformar o candidato em um fechador de alta performance. Não suavize. Foque em conversão, impacto e em "vencer" a entrevista.`,
     json: `## FORMATO DE SAÍDA (JSON ESTRITO)
 {
   "score": number,
@@ -361,17 +362,17 @@ Forneça a avaliação mais ABRANGENTE, PRECISA e ACIONÁVEL possível. Este rel
   "nextInterviewTips": ["string em português"]
 }`,
     instructions: `## INSTRUÇÕES CRÍTICAS
-1. Seja BRUTALMENTE HONESTO mas CONSTRUTIVO
-2. Cite FRASES EXATAS das respostas do candidato quando possível
-3. Toda fraqueza DEVE ter um item correspondente no plano de estudos
-4. Seja específico sobre recursos: mencione documentação, cursos ou livros reais
+1. Seja BRUTALMENTE HONESTO e focado em vendas/resultado.
+2. Cite FRASES EXATAS e explique por que elas falharam em "vender" o candidato.
+3. Toda fraqueza DEVE ter uma correção de alta performance correspondente.
+4. Seja específico sobre recursos: foque em livros como "Como Fazer Amigos e Influenciar Pessoas" ou metodologias de alto impacto.
 5. Retorne APENAS JSON válido - sem blocos de código markdown ou texto extra
 6. **TODO o conteúdo deve estar em PORTUGUÊS BRASILEIRO**`,
   },
   es: {
     intro: (level: string, position: string, stacks: string) =>
-      `Eres un Director de Contratación Técnica de élite en una empresa nivel FAANG con más de 20 años de experiencia evaluando miles de candidatos.
-Acabas de conducir una entrevista técnica para una posición de ${position} nivel ${level} enfocada en ${stacks}.
+      `Eres un Director de Contratación Profesional de élite en una empresa global de primer nivel con más de 20 años de experiencia evaluando miles de candidatos.
+Acabas de conducir una entrevista profesional para una posición de ${position} nivel ${level} enfocada en ${stacks}.
 
 **IMPORTANTE: TODO tu reporte DEBE estar escrito en ESPAÑOL. Todos los análisis, comentarios, sugerencias y planes de estudio deben estar en español.**`,
     mission: `## TU MISIÓN
@@ -405,11 +406,12 @@ Proporciona la evaluación más COMPLETA, PRECISA y ACCIONABLE posible. Este rep
 };
 
 export function generateReportPrompt(profile: UserProfile, language: Language = 'en'): string {
-  const positionLabel = POSITIONS.find(p => p.id === profile.position)?.label || profile.position;
-  const stackLabels = profile.stacks.map(stackId =>
+  const positionLabel = POSITIONS.find(p => p.id === profile.position)?.label || profile.position || 'Developer';
+  const safeStacks = Array.isArray(profile.stacks) ? profile.stacks : (profile.stacks ? [profile.stacks] : ['general']);
+  const stackLabels = safeStacks.map(stackId =>
     STACKS[profile.position as keyof typeof STACKS]?.find(s => s.id === stackId)?.label || stackId
-  ).join(', ');
-  const difficultyLabel = DIFFICULTIES.find(d => d.id === profile.level)?.label || profile.level;
+  ).join(', ') || 'General';
+  const difficultyLabel = DIFFICULTIES.find(d => d.id === profile.level)?.label || profile.level || 'mid-level';
 
   const config = REPORT_LANGUAGE_CONFIG[language];
 

@@ -78,12 +78,12 @@ export function JobContext({ className }: JobContextProps) {
                     <div className="space-y-1.5">
                         <label className="text-xs text-neutral-400">{t.company}</label>
                         <div className="relative group">
-                            <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 transition-colors group-focus-within:text-indigo-400" />
+                            <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 transition-colors group-focus-within:text-white" />
                             <input
                                 type="text"
                                 value={localContext.companyName}
                                 onChange={(e) => handleInputChange('companyName', e.target.value)}
-                                className="w-full h-10 pl-10 pr-4 rounded-lg bg-white/5 border border-white/10 text-neutral-100 text-sm placeholder:text-neutral-600 focus:outline-none focus:bg-white/10 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all"
+                                className="w-full h-10 pl-10 pr-4 rounded-lg bg-white/5 border border-white/10 text-neutral-100 text-sm placeholder:text-neutral-600 focus:outline-none focus:bg-white/10 focus:border-white/20 focus:ring-1 focus:ring-white/20 transition-all"
                             />
                         </div>
                     </div>
@@ -92,12 +92,12 @@ export function JobContext({ className }: JobContextProps) {
                     <div className="space-y-1.5">
                         <label className="text-xs text-neutral-400">{t.jobTitle}</label>
                         <div className="relative group">
-                            <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 transition-colors group-focus-within:text-indigo-400" />
+                            <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 transition-colors group-focus-within:text-white" />
                             <input
                                 type="text"
                                 value={localContext.jobTitle}
                                 onChange={(e) => handleInputChange('jobTitle', e.target.value)}
-                                className="w-full h-10 pl-10 pr-4 rounded-lg bg-white/5 border border-white/10 text-neutral-100 text-sm placeholder:text-neutral-600 focus:outline-none focus:bg-white/10 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all"
+                                className="w-full h-10 pl-10 pr-4 rounded-lg bg-white/5 border border-white/10 text-neutral-100 text-sm placeholder:text-neutral-600 focus:outline-none focus:bg-white/10 focus:border-white/20 focus:ring-1 focus:ring-white/20 transition-all"
                             />
                         </div>
                     </div>
@@ -112,7 +112,7 @@ export function JobContext({ className }: JobContextProps) {
                             onChange={(e) => handleInputChange('jobDescription', e.target.value)}
                             placeholder={t.descriptionPlaceholder}
                             rows={3}
-                            className="w-full p-3 rounded-lg bg-white/5 border border-white/10 text-neutral-100 text-sm placeholder:text-neutral-600 focus:outline-none focus:bg-white/10 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-none"
+                            className="w-full p-3 rounded-lg bg-white/5 border border-white/10 text-neutral-100 text-sm placeholder:text-neutral-600 focus:outline-none focus:bg-white/10 focus:border-white/20 focus:ring-1 focus:ring-white/20 transition-all resize-none"
                         />
                     </div>
                 </div>

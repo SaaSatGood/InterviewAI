@@ -7,6 +7,7 @@ export interface ChatConfig {
     messages: Message[];
     systemPrompt?: string;
     model?: string; // Optional: allows dynamic model selection
+    temperature?: number;
 }
 
 // OpenAI Chat Completion
@@ -27,7 +28,7 @@ async function sendOpenAIRequest(config: ChatConfig): Promise<string> {
         body: JSON.stringify({
             model: config.model || 'gpt-4-turbo-preview',
             messages: conversation,
-            temperature: 0.7,
+            temperature: config.temperature ?? 0.7,
         }),
     });
 
@@ -37,6 +38,9 @@ async function sendOpenAIRequest(config: ChatConfig): Promise<string> {
     }
 
     const data = await response.json();
+    if (!data.choices || !data.choices[0]?.message?.content) {
+        throw new Error('OpenAI returned an unexpected response format.');
+    }
     return data.choices[0].message.content;
 }
 
@@ -79,7 +83,7 @@ async function sendGeminiRequest(config: ChatConfig): Promise<string> {
                 contents: mergedContents,
                 systemInstruction,
                 generationConfig: {
-                    temperature: 0.7,
+                    temperature: config.temperature ?? 0.7,
                     maxOutputTokens: 4096,
                 },
             }),
@@ -190,6 +194,9 @@ async function sendAnthropicRequest(config: ChatConfig): Promise<string> {
     }
 
     const data = await response.json();
+    if (!data.content || !Array.isArray(data.content) || data.content.length === 0) {
+        throw new Error('Anthropic returned an unexpected response format.');
+    }
     return data.content[0].text;
 }
 
@@ -247,11 +254,14 @@ export async function generateReport(config: ChatConfig): Promise<any> {
             .replace(/\n?```/g, '')
             .trim();
 
-        // Try to extract JSON if there's extra text
+        // 1. Try to extract JSON if there's extra text
         const jsonMatch = cleanedResponse.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
             cleanedResponse = jsonMatch[0];
         }
+
+        // 2. Remove any control characters that might break JSON.parse
+        cleanedResponse = cleanedResponse.replace(/[\u0000-\u001F\u007F-\u009F]/g, "");
 
         try {
             const parsed = JSON.parse(cleanedResponse);
@@ -275,16 +285,39 @@ export async function generateReport(config: ChatConfig): Promise<any> {
                 nextInterviewTips: parsed.nextInterviewTips ?? [],
             };
         } catch (parseError) {
-            console.error('JSON Parse Error. Response was:', cleanedResponse);
-            // Return a default report structure if parsing fails
-            return {
-                score: 50,
-                hiringDecision: 'LEAN_HIRE',
-                feedback: 'Report parsing failed. Please check the browser console for the raw response.',
-                strengths: ['Completed the interview'],
-                weaknesses: ['Report generation encountered an issue'],
-                suggestions: ['Try again or check the console for debugging information']
-            };
+            // Fallback: Try to fix common trailing comma issue (simple regex)
+            try {
+                const fixedJson = cleanedResponse.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
+                const parsed = JSON.parse(fixedJson);
+                // Return structured data if fix worked... (simplified for brevity, duplicating return logic above or extracting it would be better but this is a patch)
+                return {
+                    score: parsed.score ?? 50,
+                    hiringDecision: parsed.hiringDecision ?? 'LEAN_HIRE',
+                    feedback: parsed.feedback ?? 'Evaluation completed.',
+                    technicalScore: parsed.technicalScore,
+                    problemSolvingScore: parsed.problemSolvingScore,
+                    communicationScore: parsed.communicationScore,
+                    experienceScore: parsed.experienceScore,
+                    questionAnalysis: parsed.questionAnalysis ?? [],
+                    strengths: parsed.strengths ?? ['Completed the interview'],
+                    weaknesses: parsed.weaknesses ?? ['No specific weaknesses identified'],
+                    suggestions: parsed.suggestions ?? ['Continue practicing'],
+                    interviewHighlights: parsed.interviewHighlights ?? [],
+                    criticalGaps: parsed.criticalGaps ?? [],
+                    studyPlan: parsed.studyPlan ?? [],
+                    nextInterviewTips: parsed.nextInterviewTips ?? [],
+                };
+            } catch (secondError) {
+                console.error('JSON Parse Error. Response was:', cleanedResponse);
+                return {
+                    score: 50,
+                    hiringDecision: 'LEAN_HIRE',
+                    feedback: 'Report parsing failed. The AI response could not be processed.',
+                    strengths: ['Completed the interview'],
+                    weaknesses: ['Report generation encountered an issue'],
+                    suggestions: ['Try again or check the console for debugging information']
+                };
+            }
         }
     } catch (error: any) {
         console.error("Report Generation Error:", error);
@@ -321,5 +354,8 @@ async function sendOpenAIReportRequest(config: ChatConfig): Promise<string> {
     }
 
     const data = await response.json();
+    if (!data.choices || !data.choices[0]?.message?.content) {
+        throw new Error('OpenAI returned an unexpected response format for the report.');
+    }
     return data.choices[0].message.content;
 }

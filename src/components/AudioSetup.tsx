@@ -4,7 +4,7 @@
 // Includes transcription engine selection with free Browser option
 import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Mic, Monitor, Radio, X, AlertTriangle, Key, Zap, Clock, Globe } from 'lucide-react';
+import { Mic, Monitor, Radio, X, AlertTriangle, Key, Zap, Clock, Globe, Target, Briefcase, FileText, DollarSign, CheckCircle2 } from 'lucide-react';
 import { CaptureMode } from '@/hooks/useAudioCapture';
 import { TranscriptionEngine, isWebSpeechSupported } from '@/hooks/useTranscription';
 import { useAppStore } from '@/lib/store';
@@ -15,16 +15,54 @@ interface AudioSetupProps {
     onOpenApiKeyModal?: () => void;
 }
 
+const CONTEXT_TEMPLATES = [
+    { label: "Enterprise SaaS – CFO", text: "Estou em uma call com um CFO de uma fintech Série B.\nTicket médio: $18k/ano.\nObjetivo: avançar para proposta formal.\nPrincipais riscos: objeção de preço e timing." },
+    { label: "Call de Diagnóstico", text: "Primeira reunião com Head de Marketing.\nObjetivo: Entender dores atuais com ferramentas de analytics.\nMetodologia: SPIN Selling.\nRiscos: Cliente satisfeito com concorrente atual." },
+    { label: "Negociação Avançada", text: "Reunião final com comitê de compras.\nJá apresentamos proposta técnica.\nFoco: Termos de contrato e desconto por volume.\nPersonalidade: Comprador agressivo." },
+    { label: "Objeção de Preço", text: "Cliente gostou do produto mas achou caro.\nObjetivo: Defender valor e ROI, não dar desconto imediato.\nContexto: Budget anual fecha em 1 mês." },
+    { label: "Fechamento Final", text: "Call para assinatura.\nObjetivo: Remover últimos bloqueios legais e garantir assinatura hoje.\n urgency: Alta." }
+];
+
 export function AudioSetup({ onStart, onClose, onOpenApiKeyModal }: AudioSetupProps) {
     const [selectedMode, setSelectedMode] = useState<CaptureMode>('call');
     const [selectedEngine, setSelectedEngine] = useState<TranscriptionEngine>('browser');
     const [webSpeechSupported, setWebSpeechSupported] = useState(true);
-    const { resumeData, jobContext, apiKeys, language } = useAppStore();
+    const { resumeData, jobContext, apiKeys, language, aiMode, setJobContext } = useAppStore();
+    const [isStarting, setIsStarting] = useState(false);
+    const [startMessage, setStartMessage] = useState('');
+
+    // Local state for context input
+    const [context, setContext] = useState(
+        jobContext?.jobDescription ||
+        [jobContext?.companyName, jobContext?.jobTitle].filter(Boolean).join(' - ')
+    );
+
+    // Update global context
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setJobContext({
+                companyName: '',
+                jobTitle: '',
+                jobDescription: context,
+                companyUrl: ''
+            });
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [context, setJobContext]);
+
 
     // Check Web Speech API support on mount
     useEffect(() => {
         setWebSpeechSupported(isWebSpeechSupported());
     }, []);
+
+    // Auto-switch engine when mode changes
+    // Web Speech API (browser) CANNOT process system audio — only Whisper/Realtime can
+    useEffect(() => {
+        if (selectedMode === 'call' && selectedEngine === 'browser') {
+            setSelectedEngine('whisper');
+        }
+    }, [selectedMode, selectedEngine]);
 
     // Check for OpenAI API key
     const openAiKey = useMemo(() => {
@@ -32,70 +70,90 @@ export function AudioSetup({ onStart, onClose, onOpenApiKeyModal }: AudioSetupPr
     }, [apiKeys]);
 
     const hasValidKey = !!openAiKey;
-
-    // Browser engine doesn't need API key
     const needsApiKey = selectedEngine !== 'browser';
     const canStart = selectedEngine === 'browser' || hasValidKey;
 
-    const isChromium = typeof window !== 'undefined' &&
-        /chrome|chromium|edg/i.test(navigator.userAgent) &&
-        !/firefox|safari/i.test(navigator.userAgent);
+    const [isChromium, setIsChromium] = useState(false);
+
+    useEffect(() => {
+        setIsChromium(
+            typeof window !== 'undefined' &&
+            /chrome|chromium|edg/i.test(navigator.userAgent) &&
+            !/firefox|safari/i.test(navigator.userAgent)
+        );
+    }, []);
+
+    const handleStart = () => {
+        if (!canStart) return;
+        setIsStarting(true);
+
+        // Sequence of loading messages
+        const messages = [
+            "Initializing strategic context...",
+            "Loading objection frameworks...",
+            "Activating real-time intelligence..."
+        ];
+
+        let i = 0;
+        setStartMessage(messages[0]);
+
+        const interval = setInterval(() => {
+            i++;
+            if (i < messages.length) {
+                setStartMessage(messages[i]);
+            } else {
+                clearInterval(interval);
+                onStart(selectedMode, selectedEngine);
+            }
+        }, 800);
+    };
 
     const modes: { id: CaptureMode; icon: React.ReactNode; title: string; desc: string; available: boolean }[] = [
         {
             id: 'call',
             icon: <Monitor className="w-5 h-5" />,
-            title: language === 'pt' ? 'Chamada de Vídeo' : language === 'es' ? 'Videollamada' : 'Video Call',
-            desc: 'Zoom, Meet, Teams',
+            title: language === 'pt' ? 'Chamada de Vídeo' : 'Video Call',
+            desc: language === 'pt' ? 'Zoom, Meet, Teams - Transcrição em tempo real' : 'Zoom, Meet, Teams - Real-time transcription',
             available: isChromium,
         },
         {
             id: 'presential',
             icon: <Radio className="w-5 h-5" />,
-            title: language === 'pt' ? 'Presencial' : language === 'es' ? 'Presencial' : 'In-Person',
-            desc: language === 'pt' ? 'Microfone ambiente' : language === 'es' ? 'Micrófono ambiente' : 'Room microphone',
+            title: language === 'pt' ? 'Presencial' : 'In-Person',
+            desc: language === 'pt' ? 'Microfone ambiente - Detecção de tom' : 'Room mic - Tone detection',
             available: true,
         },
     ];
 
-    const engines: { id: TranscriptionEngine; icon: React.ReactNode; title: string; desc: string; badge: string; badgeColor: string; available: boolean }[] = [
+    const engines: { id: TranscriptionEngine; title: string; subtitle: string; desc: string; usage: string; badge: string; badgeColor: string; available: boolean }[] = [
         {
             id: 'browser',
-            icon: <Globe className="w-5 h-5" />,
-            title: language === 'pt' ? 'Navegador' : language === 'es' ? 'Navegador' : 'Browser',
-            desc: language === 'pt'
-                ? '100% gratuito, sem API key'
-                : language === 'es'
-                    ? '100% gratis, sin API key'
-                    : '100% free, no API key',
-            badge: language === 'pt' ? 'GRÁTIS' : language === 'es' ? 'GRATIS' : 'FREE',
-            badgeColor: 'bg-emerald-500/20 text-emerald-300',
-            available: webSpeechSupported,
+            title: 'Navigator',
+            subtitle: 'Context & Strategy',
+            desc: language === 'pt' ? 'Análise de contexto e preparação.' : 'Context analysis and prep.',
+            usage: language === 'pt' ? 'Modo presencial apenas' : 'In-person mode only',
+            badge: 'FREE',
+            badgeColor: 'bg-white/10 text-white border border-white/20',
+            available: webSpeechSupported && selectedMode !== 'call',
         },
         {
             id: 'whisper',
-            icon: <Clock className="w-5 h-5" />,
             title: 'Whisper',
-            desc: language === 'pt'
-                ? 'Delay 5s, requer API key'
-                : language === 'es'
-                    ? 'Delay 5s, requiere API key'
-                    : '5s delay, requires API key',
-            badge: '$0.006/min',
-            badgeColor: 'bg-blue-500/20 text-blue-300',
+            subtitle: 'Live Tactical Support',
+            desc: language === 'pt' ? 'IA escuta e sugere táticas.' : 'AI listens and suggests tactics.',
+            usage: language === 'pt' ? 'Calls comerciais sérias' : 'Serious sales calls',
+            badge: 'STANDARD',
+            badgeColor: 'bg-white/10 text-white border border-white/20',
             available: true,
         },
         {
             id: 'realtime',
-            icon: <Zap className="w-5 h-5" />,
             title: 'Realtime',
-            desc: language === 'pt'
-                ? 'Baixa latência, tier pago'
-                : language === 'es'
-                    ? 'Baja latencia, tier pago'
-                    : 'Low latency, paid tier',
-            badge: '$0.06/min',
-            badgeColor: 'bg-violet-500/20 text-violet-300',
+            subtitle: 'Aggressive Close Mode',
+            desc: language === 'pt' ? 'Respostas instantâneas e fechamento.' : 'Instant answers & closing.',
+            usage: language === 'pt' ? 'Deals high-ticket' : 'High-ticket deals',
+            badge: 'PRO',
+            badgeColor: 'bg-white/10 text-white border border-white/20',
             available: true,
         },
     ];
@@ -113,63 +171,173 @@ export function AudioSetup({ onStart, onClose, onOpenApiKeyModal }: AudioSetupPr
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
         >
             <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-neutral-900 border border-neutral-700 rounded-2xl p-6 w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto"
+                initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                className="glass-panel rounded-3xl p-8 w-full max-w-2xl shadow-[0_0_50px_-12px_rgba(255,255,255,0.1)] max-h-[90vh] overflow-y-auto relative border border-white/10 bg-neutral-900"
             >
                 {/* Header */}
-                <div className="flex items-center justify-between mb-5">
+                <div className="flex items-start justify-between mb-8">
                     <div>
-                        <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                            <Mic className="w-5 h-5 text-emerald-400" />
-                            Live Coach
+                        <h2 className="text-2xl font-bold text-white flex items-center gap-3 tracking-tight mb-2">
+                            <div className="p-2 bg-white/5 rounded-xl border border-white/10">
+                                <Target className="w-6 h-6 text-white" />
+                            </div>
+                            {language === 'pt' ? 'Configuração Estratégica da Sessão' : 'Strategic Session Setup'}
                         </h2>
+                        <p className="text-neutral-400 text-sm max-w-md leading-relaxed">
+                            {language === 'pt'
+                                ? 'Defina o contexto da negociação para que a IA atue como seu estrategista de vendas.'
+                                : 'Define the negotiation context so the AI acts as your sales strategist.'}
+                        </p>
                     </div>
-                    <button onClick={onClose} className="p-1 hover:bg-neutral-800 rounded-lg transition">
-                        <X className="w-5 h-5 text-neutral-500" />
+                    <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-xl transition text-neutral-500 hover:text-white">
+                        <X className="w-6 h-6" />
                     </button>
                 </div>
 
-                {/* Transcription Engine Selection */}
-                <div className="mb-4">
-                    <p className="text-xs text-neutral-500 mb-2 uppercase tracking-wider">
-                        {language === 'pt' ? 'Motor de Transcrição' : language === 'es' ? 'Motor de Transcripción' : 'Transcription Engine'}
+                {/* Block 1: Negotiation Context */}
+                <div className="mb-8 p-1">
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <label className="text-xs font-bold text-neutral-400 uppercase tracking-widest flex items-center gap-2">
+                                {language === 'pt' ? 'Contexto da Venda' : 'Sales Context'}
+                            </label>
+                            <span className="text-[10px] text-neutral-500">
+                                {language === 'pt' ? 'Quanto mais estratégico, mais precisa será a IA.' : 'More strategic context = sharper AI.'}
+                            </span>
+                        </div>
+
+                        <textarea
+                            rows={5}
+                            className="w-full bg-neutral-950/50 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-white/30 focus:bg-neutral-900 focus:outline-none transition-all scrollbar-none resize-none placeholder:text-neutral-700 leading-relaxed"
+                            placeholder={language === 'pt'
+                                ? "Ex: Estou em uma call com um CFO de uma fintech Série B.\nTicket médio: $18k/ano.\nObjetivo: avançar para proposta formal.\nPrincipais riscos: objeção de preço e timing."
+                                : "Ex: Call with fintech Series B CFO.\nACV: $18k.\nGoal: move to formal proposal.\nRisks: price objection and timing."}
+                            value={context}
+                            onChange={(e) => setContext(e.target.value)}
+                        />
+
+                        {/* Templates */}
+                        <div className="flex flex-wrap gap-2">
+                            {CONTEXT_TEMPLATES.map((tpl, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setContext(tpl.text)}
+                                    className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-[10px] text-neutral-300 font-medium transition-all flex items-center gap-1.5"
+                                >
+                                    {i === 0 && <Briefcase className="w-3 h-3 text-neutral-400" />}
+                                    {i === 3 && <DollarSign className="w-3 h-3 text-neutral-400" />}
+                                    {i === 4 && <CheckCircle2 className="w-3 h-3 text-neutral-400" />}
+                                    {tpl.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Block 2: Intelligence Level */}
+                <div className="mb-8">
+                    <p className="text-xs font-bold text-neutral-400 mb-4 uppercase tracking-widest flex items-center gap-2">
+                        {language === 'pt' ? 'Nível de Inteligência Ativa' : 'Active Intelligence Level'}
                     </p>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         {engines.map(engine => (
                             <button
                                 key={engine.id}
                                 onClick={() => engine.available && setSelectedEngine(engine.id)}
                                 disabled={!engine.available}
-                                className={`p-2.5 rounded-xl border text-center transition-all ${selectedEngine === engine.id
-                                    ? 'border-emerald-500/50 bg-emerald-500/10'
+                                className={`p-4 rounded-2xl border transition-all relative group text-left h-full flex flex-col ${selectedEngine === engine.id
+                                    ? 'border-white bg-white/10 ring-1 ring-white/20'
                                     : engine.available
-                                        ? 'border-neutral-700 bg-neutral-800/50 hover:border-neutral-600'
-                                        : 'border-neutral-800 bg-neutral-900/50 opacity-50 cursor-not-allowed'
+                                        ? 'border-white/5 bg-white/[0.02] hover:bg-white/5 hover:border-white/10'
+                                        : 'border-white/5 bg-black/40 opacity-40 cursor-not-allowed'
                                     }`}
                             >
-                                <div className={`flex justify-center mb-1 ${selectedEngine === engine.id ? 'text-emerald-400' : 'text-neutral-500'}`}>
-                                    {engine.icon}
+                                <div className="flex justify-between items-start mb-3">
+                                    <p className="text-sm font-bold text-white">{engine.title}</p>
+                                    <span className="text-[11px] font-bold px-2 py-1 rounded-md uppercase tracking-wider bg-white/10 text-white border border-white/10 shadow-sm font-sans">
+                                        {engine.badge}
+                                    </span>
                                 </div>
-                                <p className="text-xs font-medium text-white">{engine.title}</p>
-                                <span className={`inline-block mt-1 text-[9px] px-1.5 py-0.5 rounded-full ${engine.badgeColor}`}>
-                                    {engine.badge}
-                                </span>
+                                <p className="text-[11px] font-bold text-neutral-200 mb-1.5 uppercase tracking-wider">{engine.subtitle}</p>
+                                <p className="text-xs text-neutral-300 leading-relaxed mb-4 flex-grow">{engine.desc}</p>
+                                <div className="mt-auto pt-3 border-t border-white/10">
+                                    <p className="text-[10px] text-neutral-400">
+                                        <span className="font-extrabold text-neutral-200">Uso típico:</span> {engine.usage}
+                                    </p>
+                                </div>
                             </button>
                         ))}
                     </div>
-                    <p className="text-[10px] text-neutral-500 mt-2 text-center">
-                        {engines.find(e => e.id === selectedEngine)?.desc}
+                </div>
+
+                {/* Block 3: Session Environment */}
+                <div className="mb-8">
+                    <p className="text-xs font-bold text-neutral-400 mb-4 uppercase tracking-widest flex items-center gap-2">
+                        {language === 'pt' ? 'Ambiente da Sessão' : 'Session Environment'}
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                        {modes.map(mode => (
+                            <button
+                                key={mode.id}
+                                onClick={() => mode.available && setSelectedMode(mode.id)}
+                                disabled={!mode.available}
+                                className={`p-4 rounded-xl border text-left transition-all ${selectedMode === mode.id
+                                    ? 'border-white bg-white/10 shadow-[0_0_15px_-5px_rgba(255,255,255,0.1)]'
+                                    : mode.available
+                                        ? 'border-neutral-800 bg-neutral-900/50 hover:border-neutral-600 hover:bg-white/5'
+                                        : 'border-neutral-800 bg-neutral-900/50 opacity-50 cursor-not-allowed'
+                                    }`}
+                            >
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className={selectedMode === mode.id ? 'text-white' : 'text-neutral-500'}>
+                                        {mode.icon}
+                                    </div>
+                                    <span className="text-sm font-medium text-white">{mode.title}</span>
+                                </div>
+                                <p className="text-[10px] text-neutral-400 pl-8">{mode.desc}</p>
+                                {!mode.available && mode.id === 'call' && (
+                                    <div className="flex items-center gap-1 mt-2 text-[9px] text-neutral-500 pl-8">
+                                        <AlertTriangle className="w-3 h-3" />
+                                        <span>Chrome/Edge Required</span>
+                                    </div>
+                                )}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* System Audio Guidance for Call Mode */}
+                    {selectedMode === 'call' && (
+                        <div className="mt-3 flex items-start gap-2 p-3 rounded-xl bg-white/[0.03] border border-white/10">
+                            <Monitor className="w-4 h-4 text-neutral-400 mt-0.5 shrink-0" />
+                            <p className="text-[11px] text-neutral-400 leading-relaxed">
+                                {language === 'pt'
+                                    ? 'Ao iniciar, uma janela de compartilhamento abrirá. Selecione a aba do Zoom/Meet e marque "Compartilhar áudio" para que a IA escute o áudio da reunião.'
+                                    : 'After starting, a share dialog will open. Select the Zoom/Meet tab and check "Share audio" so the AI can hear the meeting audio.'}
+                            </p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Block 4: Compliance */}
+                <div className="mb-6 flex items-start gap-3 p-3 rounded-lg bg-white/[0.02] border border-white/5">
+                    <div className="p-1 rounded bg-white/5 text-neutral-400">
+                        <CheckCircle2 className="w-3 h-3" />
+                    </div>
+                    <p className="text-[10px] text-neutral-500 leading-relaxed">
+                        {language === 'pt'
+                            ? 'Utilize com responsabilidade. Algumas organizações exigem consentimento para assistência em tempo real.'
+                            : 'Use responsibly. Some organizations require consent for real-time assistance.'}
                     </p>
                 </div>
 
                 {/* API Key Validation Error */}
                 {apiKeyError && (
-                    <div className="p-3 rounded-lg bg-red-500/10 text-red-400 text-sm mb-4 border border-red-500/20">
+                    <div className="p-3 rounded-lg bg-white/5 text-white text-sm mb-4 border border-white/20 animate-pulse">
                         <div className="flex items-center gap-2 mb-2">
                             <Key className="w-4 h-4 flex-shrink-0" />
                             <span>{apiKeyError}</span>
@@ -177,7 +345,7 @@ export function AudioSetup({ onStart, onClose, onOpenApiKeyModal }: AudioSetupPr
                         {onOpenApiKeyModal && (
                             <button
                                 onClick={onOpenApiKeyModal}
-                                className="mt-1 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-medium transition-all"
+                                className="mt-1 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-medium transition-all border border-white/10"
                             >
                                 ➕ {language === 'pt' ? 'Adicionar API Key' : language === 'es' ? 'Agregar API Key' : 'Add API Key'}
                             </button>
@@ -185,76 +353,35 @@ export function AudioSetup({ onStart, onClose, onOpenApiKeyModal }: AudioSetupPr
                     </div>
                 )}
 
-                {/* Mode selection */}
-                <div className="mb-4">
-                    <p className="text-xs text-neutral-500 mb-2 uppercase tracking-wider">
-                        {language === 'pt' ? 'Cenário' : language === 'es' ? 'Escenario' : 'Scenario'}
-                    </p>
-                    <div className="grid grid-cols-2 gap-2">
-                        {modes.map(mode => (
-                            <button
-                                key={mode.id}
-                                onClick={() => mode.available && setSelectedMode(mode.id)}
-                                disabled={!mode.available}
-                                className={`p-3 rounded-xl border text-left transition-all ${selectedMode === mode.id
-                                    ? 'border-emerald-500/50 bg-emerald-500/10'
-                                    : mode.available
-                                        ? 'border-neutral-700 bg-neutral-800/50 hover:border-neutral-600'
-                                        : 'border-neutral-800 bg-neutral-900/50 opacity-50 cursor-not-allowed'
-                                    }`}
-                            >
-                                <div className="flex items-center gap-2 mb-1">
-                                    <div className={selectedMode === mode.id ? 'text-emerald-400' : 'text-neutral-500'}>
-                                        {mode.icon}
-                                    </div>
-                                    <span className="text-sm font-medium text-white">{mode.title}</span>
-                                </div>
-                                <p className="text-[10px] text-neutral-400">{mode.desc}</p>
-                                {!mode.available && mode.id === 'call' && (
-                                    <div className="flex items-center gap-1 mt-1 text-[9px] text-amber-400">
-                                        <AlertTriangle className="w-2.5 h-2.5" />
-                                        <span>Chrome/Edge</span>
-                                    </div>
-                                )}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Context status */}
-                <div className="flex gap-2 mb-4 text-[10px] flex-wrap">
-                    {selectedEngine !== 'browser' && (
-                        <span className={`px-2 py-1 rounded-full ${hasValidKey ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-400'}`}>
-                            🔑 {hasValidKey ? 'OpenAI' : (language === 'pt' ? 'Sem chave' : 'No key')}
-                        </span>
-                    )}
-                    <span className={`px-2 py-1 rounded-full ${resumeData ? 'bg-emerald-500/20 text-emerald-300' : 'bg-neutral-800 text-neutral-500'}`}>
-                        📎 {resumeData ? 'CV' : '-'}
-                    </span>
-                    <span className={`px-2 py-1 rounded-full ${jobContext?.companyName ? 'bg-emerald-500/20 text-emerald-300' : 'bg-neutral-800 text-neutral-500'}`}>
-                        🏢 {jobContext?.companyName || '-'}
-                    </span>
-                </div>
-
-                {/* Warning */}
-                <div className="p-2.5 rounded-lg bg-amber-500/10 text-amber-300 text-[10px] mb-4 border border-amber-500/20">
-                    ⚠️ {language === 'pt'
-                        ? 'Use com responsabilidade. Algumas empresas proíbem assistência externa.'
-                        : language === 'es'
-                            ? 'Usa con responsabilidad. Algunas empresas prohíben asistencia externa.'
-                            : 'Use responsibly. Some companies prohibit external assistance.'}
-                </div>
-
-                {/* Start button */}
+                {/* CTA - Power Moment */}
                 <button
-                    onClick={() => canStart && onStart(selectedMode, selectedEngine)}
-                    disabled={!canStart}
-                    className={`w-full py-3 rounded-xl font-semibold transition-all ${canStart
-                        ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-lg shadow-emerald-500/20'
-                        : 'bg-neutral-800 text-neutral-500 cursor-not-allowed'
+                    onClick={handleStart}
+                    disabled={!canStart || isStarting}
+                    className={`w-full py-5 rounded-2xl font-bold text-lg transition-all flex flex-col items-center justify-center gap-1 border relative overflow-hidden group ${canStart
+                        ? 'bg-white text-black hover:bg-neutral-200 border-white shadow-[0_0_20px_rgba(255,255,255,0.1)] active:scale-[0.99]'
+                        : 'bg-neutral-900 text-neutral-600 border-white/5 cursor-not-allowed'
                         }`}
                 >
-                    🎧 {language === 'pt' ? 'Iniciar' : language === 'es' ? 'Iniciar' : 'Start'}
+                    {isStarting ? (
+                        <div className="flex items-center gap-3">
+                            <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                            <span className="text-sm font-mono tracking-wider animate-pulse">{startMessage}</span>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="flex items-center gap-2">
+                                <Zap className={canStart ? 'fill-black w-5 h-5' : 'w-5 h-5 fill-neutral-600'} />
+                                <span>{language === 'pt' ? 'ATIVAR IA ESTRATÉGICA' : 'ACTIVATE STRATEGIC AI'}</span>
+                            </div>
+                            {canStart && (
+                                <span className="text-[10px] font-normal text-neutral-500 group-hover:text-neutral-600">
+                                    {language === 'pt'
+                                        ? 'Sua IA começará a monitorar, analisar e sugerir ações.'
+                                        : 'Your AI will start monitoring, analyzing, and suggesting actions.'}
+                                </span>
+                            )}
+                        </>
+                    )}
                 </button>
             </motion.div>
         </motion.div>

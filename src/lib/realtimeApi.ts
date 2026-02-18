@@ -47,6 +47,8 @@ export class RealtimeTranscriber {
     private reconnectAttempts = 0;
     private maxReconnectAttempts = 3;
     private reconnectTimeout: NodeJS.Timeout | null = null;
+    private healthCheckInterval: ReturnType<typeof setInterval> | null = null;
+    private lastMessageAt = 0;
 
     constructor(
         config: RealtimeConfig,
@@ -106,9 +108,13 @@ export class RealtimeTranscriber {
                     },
                 }));
                 resolve();
+
+                // Start health check — detect stale connections
+                this.startHealthCheck();
             };
 
             this.ws.onmessage = (event) => {
+                this.lastMessageAt = Date.now();
                 try {
                     const msg = JSON.parse(event.data);
                     this.handleMessage(msg);
@@ -226,6 +232,10 @@ export class RealtimeTranscriber {
     disconnect() {
         this.isActive = false;
         if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout);
+        if (this.healthCheckInterval) {
+            clearInterval(this.healthCheckInterval);
+            this.healthCheckInterval = null;
+        }
 
         this.mediaStreamSource?.disconnect();
         this.audioWorkletNode?.disconnect();
@@ -240,5 +250,26 @@ export class RealtimeTranscriber {
             this.ws.close();
         }
         this.ws = null;
+    }
+
+    /**
+     * Periodically check if the WebSocket is still alive.
+     * If no message received for 30s while connected, trigger reconnect.
+     */
+    private startHealthCheck() {
+        if (this.healthCheckInterval) clearInterval(this.healthCheckInterval);
+        this.lastMessageAt = Date.now();
+
+        this.healthCheckInterval = setInterval(() => {
+            if (!this.isActive || !this.ws) return;
+
+            const silenceDuration = Date.now() - this.lastMessageAt;
+
+            // If no message for 30 seconds on an open connection, reconnect
+            if (silenceDuration > 30000 && this.ws.readyState === WebSocket.OPEN) {
+                console.warn('[Realtime] Connection appears stale, reconnecting...');
+                this.ws.close(); // This will trigger onclose -> attemptReconnect()
+            }
+        }, 10000);
     }
 }

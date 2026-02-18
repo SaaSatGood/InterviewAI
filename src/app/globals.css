@@ -1,20 +1,47 @@
 @import "tailwindcss";
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+@theme {
+  --color-closer-emerald: oklch(0.7 0.25 160);
+  --color-closer-indigo: oklch(0.6 0.2 260);
+  --color-closer-gold: oklch(0.8 0.15 85);
+  --color-closer-deep: oklch(0.15 0.02 260);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 10, 10, 15;
+  --background-end-rgb: 0, 0, 0;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: white;
+  background: black;
+  font-feature-settings: "cv02", "cv11", "ss01";
+  letter-spacing: -0.01em;
+}
+
+.glass-panel {
+  @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl;
+}
+
+.glass-card {
+  @apply bg-white/[0.02] backdrop-blur-md border border-white/5 hover:border-white/10 transition-all duration-300;
+}
+
+.animate-glow {
+  animation: glow 4s ease-in-out infinite;
+}
+
+@keyframes glow {
+
+  0%,
+  100% {
+    opacity: 0.3;
+    filter: blur(40px);
+  }
+
+  50% {
+    opacity: 0.6;
+    filter: blur(60px);
+  }
 }

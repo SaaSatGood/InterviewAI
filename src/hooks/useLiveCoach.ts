@@ -56,17 +56,22 @@ export function useLiveCoach(): LiveCoachReturn {
 
             // Skip if transcript hasn't changed meaningfully
             if (transcriptText === lastTranscriptRef.current) return;
-            if (transcriptText.length < MIN_TRANSCRIPT_LENGTH) return;
+            if (transcriptText.length < MIN_TRANSCRIPT_LENGTH) {
+                console.log('[LiveCoach] Transcript too short:', transcriptText.length);
+                return;
+            }
 
             lastTranscriptRef.current = transcriptText;
             setState(prev => ({ ...prev, isAnalyzing: true, error: null }));
+            console.log('[LiveCoach] Analyzing...', { length: transcriptText.length, mode: useAppStore.getState().aiMode });
 
             try {
                 const { systemPrompt, userMessage } = buildCoachPrompt(
                     language,
                     resumeData,
                     jobContext,
-                    transcriptText
+                    transcriptText,
+                    useAppStore.getState().aiMode
                 );
 
                 // Determine best model: use selected or smart default
@@ -78,17 +83,37 @@ export function useLiveCoach(): LiveCoachReturn {
                     model,
                     messages: [{ role: 'user', content: userMessage }],
                     systemPrompt,
+                    temperature: 0.7, // Add temperature for creativity
                 });
 
-                // Parse JSON response
-                const jsonMatch = response.match(/\{[\s\S]*\}/);
+                console.log('[LiveCoach] Raw Response:', response);
+
+                // Parse JSON response safely handling markdown code blocks
+                let cleanJson = response.trim();
+                // Remove markdown code blocks if present
+                if (cleanJson.startsWith('```')) {
+                    cleanJson = cleanJson.replace(/^```(json)?/, '').replace(/```$/, '');
+                }
+
+                // Find JSON object boundaries
+                const jsonMatch = cleanJson.match(/\{[\s\S]*\}/);
+
                 if (jsonMatch) {
                     const parsed = JSON.parse(jsonMatch[0]) as Omit<CoachTip, 'timestamp' | 'questionText'>;
+
+                    // Validate basic structure
+                    if (!parsed.tips || !Array.isArray(parsed.tips)) {
+                        console.error('[LiveCoach] Invalid JSON structure:', parsed);
+                        throw new Error('Invalid response structure');
+                    }
+
                     const tip: CoachTip = {
                         ...parsed,
                         timestamp: Date.now(),
                         questionText: extractLastQuestion(recentSegments),
                     };
+
+                    console.log('[LiveCoach] Insight generated:', tip);
 
                     setState(prev => ({
                         ...prev,
@@ -96,8 +121,12 @@ export function useLiveCoach(): LiveCoachReturn {
                         isAnalyzing: false,
                         lastAnalyzedAt: Date.now(),
                     }));
+                } else {
+                    console.warn('[LiveCoach] No JSON found in response');
+                    throw new Error('No JSON found in response');
                 }
             } catch (err: unknown) {
+                console.error('[LiveCoach] Error:', err);
                 let errorMsg = 'Falha na análise';
 
                 if (err instanceof Error) {
@@ -132,7 +161,7 @@ export function useLiveCoach(): LiveCoachReturn {
                 setState(prev => ({ ...prev, isAnalyzing: false, error: errorMsg }));
             }
         }, DEBOUNCE_MS);
-    }, [getActiveKey, language, resumeData, jobContext]);
+    }, [getActiveKey, language, resumeData, jobContext, selectedModel]);
 
     const clearTips = useCallback(() => {
         setState({ tips: [], isAnalyzing: false, lastAnalyzedAt: null, error: null });

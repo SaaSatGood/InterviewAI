@@ -21,6 +21,7 @@ export interface ApiKey {
 }
 
 export interface UserProfile {
+  category: 'tech' | 'sales' | 'support';
   position: string;
   stacks: string[]; // Changed from single stack to array
   level: string;
@@ -92,8 +93,10 @@ interface AppState {
   // Resume & Job Context
   resumeData: ResumeData | null;
   jobContext: JobContext | null;
+  aiMode: 'sales' | 'support' | 'interview'; // AI Context Mode
   setResumeData: (data: ResumeData | null) => void;
   setJobContext: (context: JobContext | null) => void;
+  setAiMode: (mode: 'sales' | 'support' | 'interview') => void;
 
   isConfigured: () => boolean;
   resetSession: () => void;
@@ -137,6 +140,7 @@ export const useAppStore = create<AppState>()(
       // Resume & Job Context
       resumeData: null,
       jobContext: null,
+      aiMode: 'sales',
 
       addApiKey: (name: string, key: string, provider: Provider) => {
         const newKey: ApiKey = {
@@ -185,6 +189,7 @@ export const useAppStore = create<AppState>()(
       // Resume & Job Context actions
       setResumeData: (resumeData: ResumeData | null) => set({ resumeData }),
       setJobContext: (jobContext: JobContext | null) => set({ jobContext }),
+      setAiMode: (aiMode: 'sales' | 'support' | 'interview') => set({ aiMode }),
 
       isConfigured: () => {
         const state = get();
@@ -205,6 +210,7 @@ export const useAppStore = create<AppState>()(
         jobContext: state.jobContext,
         history: state.history,
         lastProfile: state.lastProfile,
+        aiMode: state.aiMode,
       }),
       onRehydrateStorage: () => (state) => {
         // Auto-detect language on first visit if not set

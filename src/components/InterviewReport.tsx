@@ -249,7 +249,7 @@ export function InterviewReport({ onOpenSettings }: InterviewReportProps) {
 
                                 <div className="bg-white/5 p-6 rounded-2xl border border-white/10 backdrop-blur-sm">
                                     <h3 className="text-white font-semibold mb-2 flex items-center justify-center lg:justify-start gap-2">
-                                        <Sparkles className="w-4 h-4 text-amber-400" /> Executive Summary
+                                        <Sparkles className="w-4 h-4 text-amber-400" /> {t('report.summary')}
                                     </h3>
                                     <p className="text-neutral-300 leading-relaxed text-sm lg:text-base">{report.feedback}</p>
                                 </div>

@@ -335,7 +335,7 @@ export class VoiceSpeaker {
     }
 }
 
-// Available AI models by provider (updated Feb 2026)
+
 export const AI_MODELS = {
     openai: [
         { id: 'gpt-5', name: 'GPT-5', description: 'Most capable, multimodal reasoning' },

@@ -42,6 +42,54 @@ export function useInterview() {
             setMessages(prev => [...prev, assistantMessage]);
         } catch (err: any) {
             setError(err.message || "Failed to send message");
+            setMessages(prev => {
+                const updated = [...prev];
+                updated[updated.length - 1] = { ...updated[updated.length - 1], status: 'error' };
+                return updated;
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    }, [activeKey, userProfile, messages, language, resumeData, jobContext, selectedModel]);
+
+    const retryLastMessage = useCallback(async () => {
+        if (!activeKey || !userProfile || messages.length === 0) return;
+        const lastMsg = messages[messages.length - 1];
+        if (lastMsg.role !== 'user' || lastMsg.status !== 'error') return;
+
+        // Strip the error status to show it's "pending" again
+        setMessages(prev => {
+            const updated = [...prev];
+            delete updated[updated.length - 1].status;
+            return updated;
+        });
+
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const systemPrompt = generateSystemPrompt(userProfile, language, {
+                resumeData,
+                jobContext,
+            });
+
+            const responseContent = await sendChatRequest({
+                apiKey: activeKey.key,
+                provider: activeKey.provider,
+                messages, // Send existing messages where the last one is the user's
+                systemPrompt,
+                model: selectedModel || undefined
+            });
+
+            const assistantMessage: Message = { role: 'assistant', content: responseContent, timestamp: Date.now() };
+            setMessages(prev => [...prev, assistantMessage]);
+        } catch (err: any) {
+            setError(err.message || "Failed to retry message");
+            setMessages(prev => {
+                const updated = [...prev];
+                updated[updated.length - 1] = { ...updated[updated.length - 1], status: 'error' };
+                return updated;
+            });
         } finally {
             setIsLoading(false);
         }
@@ -122,6 +170,7 @@ export function useInterview() {
         isLoading,
         error,
         sendMessage,
+        retryLastMessage,
         finishInterview
     };
 }

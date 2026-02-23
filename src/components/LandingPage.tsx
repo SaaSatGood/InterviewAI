@@ -8,6 +8,12 @@ import {
     TrendingUp, Target, Award, BarChart3, MessageSquare
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
+import { useShallow } from 'zustand/react/shallow';
+import { IntegrationAnimation } from './IntegrationAnimation';
+import { LiveCoachAnimation } from './LiveCoachAnimation';
+import { useAuth } from '@/hooks/useAuth';
+import { LogOut, User } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface LandingPageProps {
     onStartInterview: () => void;
@@ -16,9 +22,11 @@ interface LandingPageProps {
 }
 
 export function LandingPage({ onStartInterview, onOpenLiveCoach, onOpenApiKey }: LandingPageProps) {
-    const { t } = useAppStore();
+    const { t } = useAppStore(useShallow(state => ({ t: state.t })));
     const [openFaq, setOpenFaq] = useState<number | null>(null);
     const toggleFaq = (index: number) => setOpenFaq(openFaq === index ? null : index);
+    const { user, signOut } = useAuth();
+    const router = useRouter();
 
     const FAQs = [
         {
@@ -149,7 +157,12 @@ export function LandingPage({ onStartInterview, onOpenLiveCoach, onOpenApiKey }:
             </div>
 
             {/* Navbar */}
-            <nav className="relative z-50 flex items-center justify-between px-6 py-6 max-w-7xl mx-auto">
+            <motion.nav
+                className="relative z-50 flex items-center justify-between px-6 py-6 max-w-7xl mx-auto"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+            >
                 <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center shadow-lg shadow-white/5">
                         <Sparkles className="w-5 h-5 text-white" />
@@ -157,6 +170,32 @@ export function LandingPage({ onStartInterview, onOpenLiveCoach, onOpenApiKey }:
                     <span className="text-xl font-bold tracking-tight">InterviewAI</span>
                 </div>
                 <div className="flex items-center gap-4">
+                    {user && (
+                        <div className="hidden sm:flex items-center gap-3 mr-2 border-r border-white/10 pr-6">
+                            <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs font-bold border border-indigo-500/30">
+                                    {(user.displayName || user.email || '?').charAt(0).toUpperCase()}
+                                </div>
+                                <span className="text-sm font-medium text-neutral-300">
+                                    {user.displayName?.split(' ')[0] || user.email?.split('@')[0]}
+                                </span>
+                            </div>
+                            <button
+                                onClick={() => router.push('/account')}
+                                className="p-1.5 rounded-md hover:bg-white/10 text-neutral-400 hover:text-white transition-colors"
+                                title="Minha Conta"
+                            >
+                                <User className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={signOut}
+                                className="p-1.5 rounded-md hover:bg-red-500/10 text-neutral-500 hover:text-red-400 transition-colors ml-1"
+                                title="Sair da conta"
+                            >
+                                <LogOut className="w-4 h-4" />
+                            </button>
+                        </div>
+                    )}
                     <button
                         onClick={onOpenApiKey}
                         className="text-sm text-neutral-400 hover:text-white transition-colors hidden sm:block"
@@ -170,96 +209,120 @@ export function LandingPage({ onStartInterview, onOpenLiveCoach, onOpenApiKey }:
                         Live Coach
                     </button>
                 </div>
-            </nav>
+            </motion.nav>
 
             {/* Hero Section */}
-            <section className="relative z-10 pt-20 pb-24 px-6 text-center max-w-5xl mx-auto">
-                <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, ease: "easeOut" }}
-                >
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white text-xs font-bold mb-8 backdrop-blur-md uppercase tracking-wider">
-                        <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-40"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
-                        </span>
-                        Vantagem Competitiva Injusta
-                    </div>
+            <section className="relative z-10 pt-20 pb-24 px-6 max-w-7xl mx-auto">
+                <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-8 min-h-[500px]">
+                    {/* Left: Text Content */}
+                    <motion.div
+                        className="flex-1 text-center lg:text-left z-20"
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
+                    >
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white text-xs font-bold mb-8 backdrop-blur-md uppercase tracking-wider mx-auto lg:mx-0">
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-40"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                            </span>
+                            Vantagem Competitiva Injusta
+                        </div>
 
-                    <h1 className="text-6xl md:text-9xl font-bold tracking-tighter mb-10 leading-[0.9] text-white select-none">
-                        Domine a <br />
-                        Conversa.
-                    </h1>
+                        <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-bold tracking-tighter mb-8 leading-[0.9] text-white select-none">
+                            Domine a <br />
+                            Conversa.
+                        </h1>
 
-                    <p className="text-xl md:text-2xl text-neutral-400 max-w-2xl mx-auto mb-14 leading-relaxed font-medium tracking-tight">
-                        O co-piloto invisível que sopra as respostas exatas no seu ouvido.
-                        <span className="text-white block mt-2">Você fecha o negócio. Nós damos a munição.</span>
-                    </p>
+                        <p className="text-lg md:text-2xl text-neutral-400 max-w-2xl mx-auto lg:mx-0 mb-12 leading-relaxed font-medium tracking-tight">
+                            O co-piloto invisível que ouve em tempo real e sopra as respostas exatas no seu ouvido.
+                            <span className="text-white block mt-2">Você fecha o negócio. Nós damos a munição.</span>
+                        </p>
 
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <button
-                            onClick={onOpenLiveCoach}
-                            className="w-full sm:w-auto px-8 py-4 rounded-full bg-white text-black font-semibold text-lg hover:bg-neutral-200 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:-translate-y-1"
-                        >
-                            <Zap className="w-5 h-5 fill-current" />
-                            Ativar Live Coach
-                        </button>
-                        <button
-                            onClick={onStartInterview}
-                            className="w-full sm:w-auto px-8 py-4 rounded-full bg-black border border-white/20 text-white font-semibold text-lg hover:bg-neutral-900 hover:border-white/40 transition-all flex items-center justify-center gap-2"
-                        >
-                            <Play className="w-5 h-5 fill-current" />
-                            Simular Entrevista
-                        </button>
-                    </div>
-                </motion.div>
+                        <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                            <button
+                                onClick={onOpenLiveCoach}
+                                className="w-full sm:w-auto px-8 py-4 rounded-full bg-white text-black font-semibold text-lg hover:bg-neutral-200 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:-translate-y-1"
+                            >
+                                <Zap className="w-5 h-5 fill-current" />
+                                Ativar Live Coach
+                            </button>
+                            <button
+                                onClick={onStartInterview}
+                                className="w-full sm:w-auto px-8 py-4 rounded-full bg-black border border-white/20 text-white font-semibold text-lg hover:bg-neutral-900 hover:border-white/40 transition-all flex items-center justify-center gap-2"
+                            >
+                                <Play className="w-5 h-5 fill-current" />
+                                Simular Entrevista
+                            </button>
+                        </div>
+                    </motion.div>
+
+                    {/* Right: Animation */}
+                    <motion.div
+                        className="flex-1 w-full flex justify-center lg:justify-end z-10"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
+                    >
+                        <IntegrationAnimation />
+                    </motion.div>
+                </div>
             </section>
 
-            {/* AI Demo Quote */}
-            <section className="relative z-10 pb-24 px-6 max-w-3xl mx-auto">
+            {/* Live Coach Animated Dashboard Showcase */}
+            <section className="relative z-10 pb-24 px-6 max-w-5xl mx-auto">
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.3 }}
-                    className="p-8 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-md relative overflow-hidden"
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    className="p-4 md:p-8 rounded-[40px] bg-white/[0.02] border border-white/10 backdrop-blur-xl relative overflow-hidden"
                 >
-                    <div className="flex flex-col gap-4">
-                        <div className="flex items-center justify-between border-b border-white/5 pb-4">
-                            <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center">
-                                    <Sparkles className="w-4 h-4 text-white" />
-                                </div>
-                                <span className="text-xs font-bold text-white uppercase tracking-wide">Análise ao Vivo</span>
-                            </div>
-                            <div className="px-3 py-1 rounded-full bg-white text-[10px] text-black font-bold tracking-wider uppercase">
-                                DICA DA IA
-                            </div>
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-[80px] pointer-events-none" />
+
+                    <div className="text-center mb-10 mt-4 relative z-10">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white text-[10px] font-bold tracking-widest uppercase mb-4">
+                            <Sparkles className="w-3 h-3" /> Dashboard Inteligente
                         </div>
-                        <p className="text-neutral-300 text-sm md:text-base leading-relaxed italic">
-                            "O InterviewAI lhe oferece orientação em tempo real e manuseio eficiente de objeções durante apresentações, para que você possa focar em entregar mensagens impactantes e fechar mais negócios. <span className="text-white font-medium">Pode me falar um pouco mais sobre as principais dificuldades que enfrenta com apresentações atualmente?</span>"
+                        <h2 className="text-4xl md:text-6xl lg:text-[4.5rem] font-bold tracking-tighter mb-6 leading-[0.9] text-white select-none">
+                            Seu Co-Piloto <br className="hidden md:block" /> In-Call
+                        </h2>
+                        <p className="text-lg md:text-2xl text-neutral-400 max-w-2xl mx-auto leading-relaxed font-medium tracking-tight">
+                            Análise de sentimentos, detecção de objeções e sugestões estratégicas geradas em tempo real durante a sua reunião.
                         </p>
                     </div>
+
+                    <LiveCoachAnimation />
                 </motion.div>
             </section>
 
             {/* How It Works */}
             <section className="relative z-10 py-24 px-6 bg-neutral-900/30 border-y border-white/5 backdrop-blur-sm">
-                <div className="max-w-7xl mx-auto">
+                <motion.div
+                    className="max-w-7xl mx-auto"
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                >
                     <div className="text-center mb-4">
                         <span className="text-xs font-bold text-neutral-500 uppercase tracking-[0.3em]">Como Funciona</span>
                     </div>
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                    <div className="text-center mb-20">
+                        <h2 className="text-4xl md:text-6xl lg:text-[4.5rem] font-bold tracking-tighter mb-6 leading-[0.9] text-white select-none">
                             Domine qualquer situação com <br className="hidden md:block" />apoio em tempo real
                         </h2>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {HOW_IT_WORKS.map((item, i) => (
-                            <div
+                            <motion.div
                                 key={i}
                                 className="group p-8 rounded-3xl bg-neutral-950 border border-white/5 hover:border-white/20 hover:bg-neutral-900 transition-all duration-500 relative overflow-hidden"
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.5, delay: i * 0.15 }}
                             >
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-[50px] group-hover:bg-white/10 transition-all" />
 
@@ -267,41 +330,52 @@ export function LandingPage({ onStartInterview, onOpenLiveCoach, onOpenApiKey }:
                                     <item.icon className="w-6 h-6" />
                                 </div>
 
-                                <h3 className="text-lg font-bold mb-3 text-white group-hover:text-neutral-200 transition-colors">
+                                <h3 className="text-xl font-bold tracking-tight mb-3 text-white group-hover:text-neutral-200 transition-colors">
                                     {item.title}
                                 </h3>
-                                <p className="text-neutral-400 leading-relaxed text-sm group-hover:text-neutral-300">
+                                <p className="text-neutral-400 leading-relaxed font-medium tracking-tight group-hover:text-neutral-300">
                                     {item.desc}
                                 </p>
-                            </div>
+                            </motion.div>
                         ))}
                     </div>
-                </div>
+                </motion.div>
             </section>
 
             {/* For Whom / Personas */}
             <section className="relative z-10 py-24 px-6 max-w-7xl mx-auto">
-                <div className="text-center mb-4">
-                    <span className="text-xs font-bold text-neutral-500 uppercase tracking-[0.3em]">Aplicações</span>
-                </div>
-                <div className="text-center mb-16">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                        Para quem lidera, vende, entrevista ou apresenta
-                    </h2>
-                </div>
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                >
+                    <div className="text-center mb-4">
+                        <span className="text-xs font-bold text-neutral-500 uppercase tracking-[0.3em]">Aplicações</span>
+                    </div>
+                    <div className="text-center mb-20">
+                        <h2 className="text-4xl md:text-6xl lg:text-[4.5rem] font-bold tracking-tighter mb-6 leading-[0.9] text-white select-none">
+                            Para quem lidera, vende, <br className="hidden md:block" />entrevista ou apresenta
+                        </h2>
+                    </div>
+                </motion.div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                     {PERSONAS.map((persona, i) => (
-                        <div
+                        <motion.div
                             key={i}
                             className="group p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/20 hover:bg-white/5 transition-all duration-300 text-center"
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.4, delay: i * 0.1 }}
                         >
                             <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4 text-neutral-400 group-hover:text-white group-hover:bg-white/10 transition-all">
                                 <persona.icon className="w-6 h-6" />
                             </div>
-                            <h3 className="text-sm font-bold mb-2 text-white">{persona.title}</h3>
-                            <p className="text-xs text-neutral-500 leading-relaxed group-hover:text-neutral-400">{persona.desc}</p>
-                        </div>
+                            <h3 className="text-lg font-bold tracking-tight mb-2 text-white">{persona.title}</h3>
+                            <p className="text-sm font-medium tracking-tight text-neutral-500 leading-relaxed group-hover:text-neutral-400">{persona.desc}</p>
+                        </motion.div>
                     ))}
                 </div>
             </section>
@@ -310,59 +384,97 @@ export function LandingPage({ onStartInterview, onOpenLiveCoach, onOpenApiKey }:
             {/* Benefits / Features - MASTER CARD LAYOUT */}
             <section className="relative z-10 py-24 px-6">
                 <div className="max-w-7xl mx-auto">
-                    <div className="bg-white rounded-[40px] p-8 md:p-16 flex flex-col lg:flex-row gap-12 lg:gap-24 shadow-2xl">
-
+                    <motion.div
+                        className="bg-white rounded-[40px] p-8 md:p-16 flex flex-col lg:flex-row gap-12 lg:gap-24 shadow-2xl"
+                        initial={{ opacity: 0, y: 50 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: "-100px" }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
+                    >
                         {/* Left Column: Heading */}
                         <div className="flex-1 lg:max-w-md flex flex-col justify-start">
-                            <div className="mb-8">
+                            <motion.div
+                                className="mb-8"
+                                initial={{ opacity: 0, x: -20 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.5, delay: 0.2 }}
+                            >
                                 <span className="px-4 py-1.5 rounded-full bg-neutral-100 text-neutral-600 text-[11px] font-bold uppercase tracking-wider">
                                     Funcionalidades
                                 </span>
-                            </div>
-                            <h2 className="text-4xl md:text-6xl font-bold tracking-tighter text-black leading-[0.95]">
+                            </motion.div>
+                            <motion.h2
+                                className="text-4xl md:text-6xl lg:text-[4.5rem] font-bold tracking-tighter mb-6 leading-[0.9] text-black select-none"
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+                            >
                                 Venda mais, com <br />
                                 menos esforço e <br />
                                 mais impacto
-                            </h2>
+                            </motion.h2>
                         </div>
 
                         {/* Right Column: List */}
                         <div className="flex-1 flex flex-col gap-10 justify-center">
                             {BENEFITS.map((benefit, i) => (
-                                <div key={i} className="flex gap-5 group">
+                                <motion.div
+                                    key={i}
+                                    className="flex gap-5 group"
+                                    initial={{ opacity: 0, x: 30 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ duration: 0.5, delay: 0.4 + i * 0.15, ease: "easeOut" }}
+                                >
                                     <div className="shrink-0 mt-1">
-                                        <benefit.icon className="w-6 h-6 text-black stroke-[1.5]" />
+                                        <div className="w-12 h-12 flex items-center justify-center rounded-2xl bg-neutral-100 group-hover:bg-black group-hover:text-white transition-colors duration-300">
+                                            <benefit.icon className="w-6 h-6 stroke-[1.5]" />
+                                        </div>
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-bold text-black mb-1 group-hover:underline decoration-1 underline-offset-4 transition-all">
+                                        <h3 className="text-xl font-bold tracking-tight text-black mb-2 group-hover:text-neutral-700 transition-colors">
                                             {benefit.title}
                                         </h3>
-                                        <p className="text-neutral-500 text-sm leading-relaxed font-medium max-w-sm">
+                                        <p className="text-neutral-500 leading-relaxed font-medium tracking-tight max-w-sm">
                                             {benefit.desc}
                                         </p>
                                     </div>
-                                </div>
+                                </motion.div>
                             ))}
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
             </section>
 
             {/* Testimonials (Anonymous) */}
             <section className="relative z-10 py-24 px-6 max-w-7xl mx-auto">
-                <div className="text-center mb-16">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
-                        Resultados que Falam por Si
+                <motion.div
+                    className="text-center mb-16"
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                >
+                    <h2 className="text-4xl md:text-6xl lg:text-[4.5rem] font-bold tracking-tighter mb-6 leading-[0.9] text-white select-none">
+                        Resultados que Falam <br className="hidden md:block" /> por Si
                     </h2>
-                    <p className="text-neutral-400 max-w-2xl mx-auto">
-                        Profissionais de elite usam nossa tecnologia para garantir resultados. <br />
-                        Privacidade total: seus segredos continuam seus.
+                    <p className="text-lg md:text-2xl text-neutral-400 max-w-2xl mx-auto leading-relaxed font-medium tracking-tight">
+                        Profissionais de elite usam nossa tecnologia para garantir resultados. Privilidade total: seus segredos continuam seus.
                     </p>
-                </div>
+                </motion.div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {TESTIMONIALS.map((t, i) => (
-                        <div key={i} className="p-8 rounded-3xl bg-white/[0.02] border border-white/5 relative overflow-hidden group hover:bg-white/[0.04] transition-colors">
+                        <motion.div
+                            key={i}
+                            className="p-8 rounded-3xl bg-white/[0.02] border border-white/5 relative overflow-hidden group hover:bg-white/[0.04] transition-colors"
+                            initial={{ opacity: 0, y: 40 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.7, delay: i * 0.2, type: "spring", bounce: 0.4 }}
+                        >
                             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                                 <Sparkles className="w-12 h-12 text-white" />
                             </div>
@@ -377,10 +489,10 @@ export function LandingPage({ onStartInterview, onOpenLiveCoach, onOpenApiKey }:
                                 </div>
                             </div>
 
-                            <p className="text-neutral-300 text-sm leading-relaxed italic relative z-10">
+                            <p className="text-neutral-300 leading-relaxed font-medium tracking-tight italic relative z-10">
                                 "{t.quote}"
                             </p>
-                        </div>
+                        </motion.div>
                     ))}
                 </div>
             </section>
@@ -388,15 +500,15 @@ export function LandingPage({ onStartInterview, onOpenLiveCoach, onOpenApiKey }:
             {/* CTA Section */}
             <section className="relative z-10 py-32 px-6 text-center max-w-4xl mx-auto">
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
                 >
-                    <h2 className="text-4xl md:text-6xl font-bold mb-8 tracking-tighter text-white">
+                    <h2 className="text-5xl md:text-7xl lg:text-[5.5rem] font-bold tracking-tighter mb-8 leading-[0.9] text-white select-none">
                         Pare de Perder Oportunidades.
                     </h2>
-                    <p className="text-neutral-400 text-xl mb-12 max-w-2xl mx-auto font-medium">
+                    <p className="text-lg md:text-2xl text-neutral-400 max-w-2xl mx-auto mb-12 leading-relaxed font-medium tracking-tight">
                         Seus concorrentes já estão usando IA. <br />
                         Você vai ficar para trás ou vai assumir o controle?
                     </p>
@@ -414,51 +526,68 @@ export function LandingPage({ onStartInterview, onOpenLiveCoach, onOpenApiKey }:
 
             {/* FAQ Section */}
             <section className="relative z-10 py-24 px-6 max-w-3xl mx-auto">
-                <div className="text-center mb-4">
-                    <span className="text-xs font-bold text-neutral-500 uppercase tracking-[0.3em]">Perguntas</span>
-                </div>
-                <h2 className="text-3xl font-bold text-center mb-4">Alguma dúvida? Aqui está a resposta</h2>
-                <p className="text-center text-neutral-500 text-sm mb-12">
-                    Ainda ficou com alguma dúvida? Mande um email para <a href="mailto:help@interviewai.com" className="text-white hover:underline">help@interviewai.com</a>
-                </p>
-                <div className="space-y-4">
-                    {FAQs.map((faq, i) => (
-                        <div
-                            key={i}
-                            className={`rounded-2xl border transition-all duration-300 overflow-hidden ${openFaq === i
-                                ? 'bg-neutral-900 border-white/20'
-                                : 'bg-transparent border-white/5 hover:border-white/10'
-                                }`}
-                        >
-                            <button
-                                onClick={() => toggleFaq(i)}
-                                className="w-full flex items-center justify-between p-6 text-left"
-                            >
-                                <span className={`font-semibold ${openFaq === i ? 'text-white' : 'text-neutral-400'}`}>
-                                    {faq.question}
-                                </span>
-                                <ChevronDown
-                                    className={`w-5 h-5 transition-transform duration-300 ${openFaq === i ? 'rotate-180 text-white' : 'text-neutral-500'
-                                        }`}
-                                />
-                            </button>
-                            <div
-                                className={`transition-all duration-300 ease-in-out grid ${openFaq === i ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                >
+                    <div className="text-center mb-4">
+                        <span className="text-xs font-bold text-neutral-500 uppercase tracking-[0.3em]">Perguntas</span>
+                    </div>
+                    <h2 className="text-4xl md:text-6xl lg:text-[4.5rem] font-bold tracking-tighter mb-6 leading-[0.9] text-white select-none text-center">Alguma dúvida? <br className="hidden md:block" />Aqui está a resposta</h2>
+                    <p className="text-center text-lg md:text-2xl text-neutral-400 max-w-2xl mx-auto mb-16 leading-relaxed font-medium tracking-tight">
+                        Ainda ficou com alguma dúvida? Mande um email para <a href="mailto:help@interviewai.com" className="text-white hover:underline transition-colors">help@interviewai.com</a>
+                    </p>
+                    <div className="space-y-4">
+                        {FAQs.map((faq, i) => (
+                            <motion.div
+                                key={i}
+                                className={`rounded-3xl border transition-all duration-300 overflow-hidden ${openFaq === i
+                                    ? 'bg-neutral-900 border-white/20'
+                                    : 'bg-transparent border-white/5 hover:border-white/10'
                                     }`}
+                                initial={{ opacity: 0, x: -20 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.5, delay: i * 0.1 }}
                             >
-                                <div className="overflow-hidden">
-                                    <p className="px-6 pb-6 text-neutral-400 text-sm leading-relaxed">
-                                        {faq.answer}
-                                    </p>
+                                <button
+                                    onClick={() => toggleFaq(i)}
+                                    className="w-full flex items-center justify-between p-6 text-left"
+                                >
+                                    <span className={`text-lg md:text-xl font-bold tracking-tight ${openFaq === i ? 'text-white' : 'text-neutral-400 hover:text-neutral-300'} transition-colors`}>
+                                        {faq.question}
+                                    </span>
+                                    <ChevronDown
+                                        className={`w-5 h-5 transition-transform duration-300 ${openFaq === i ? 'rotate-180 text-white' : 'text-neutral-500'
+                                            }`}
+                                    />
+                                </button>
+                                <div
+                                    className={`transition-all duration-300 ease-in-out grid ${openFaq === i ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                                        }`}
+                                >
+                                    <div className="overflow-hidden">
+                                        <p className="px-6 pb-6 text-neutral-400 leading-relaxed font-medium tracking-tight">
+                                            {faq.answer}
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </motion.div>
             </section>
 
             {/* Footer */}
-            <footer className="relative z-10 py-12 px-6 border-t border-white/5 bg-neutral-950 text-center">
+            <motion.footer
+                className="relative z-10 py-12 px-6 border-t border-white/5 bg-neutral-950 text-center"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+            >
                 <div className="flex items-center justify-center gap-2 mb-8 opacity-50">
                     <Sparkles className="w-4 h-4" />
                     <span className="font-bold tracking-tight">InterviewAI</span>
@@ -472,7 +601,7 @@ export function LandingPage({ onStartInterview, onOpenLiveCoach, onOpenApiKey }:
                 <p className="text-xs text-neutral-600">
                     © 2025 InterviewAI. Construído com ❤️ para quem vende, lidera e apresenta.
                 </p>
-            </footer>
+            </motion.footer>
         </div>
     );
 }

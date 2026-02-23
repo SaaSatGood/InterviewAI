@@ -6,6 +6,7 @@ import { Send, User, Bot, Loader2, AlertCircle, LogOut, Sparkles, Clock, Message
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInterview } from '@/hooks/useInterview';
 import { useAppStore } from '@/lib/store';
+import { useShallow } from 'zustand/react/shallow';
 import ReactMarkdown from 'react-markdown';
 import { InterviewTimer } from './InterviewTimer';
 import { clsx } from 'clsx';
@@ -17,8 +18,19 @@ interface ChatInterfaceProps {
 }
 
 export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
-    const { messages, isLoading, error, sendMessage, finishInterview } = useInterview();
-    const { resetSession, t, userProfile, voiceEnabled, setVoiceEnabled, selectedModel, setSelectedModel, getActiveKey } = useAppStore();
+    const { messages, isLoading, error, sendMessage, retryLastMessage, finishInterview } = useInterview();
+    const { resetSession, t, userProfile, voiceEnabled, setVoiceEnabled, selectedModel, setSelectedModel, getActiveKey } = useAppStore(
+        useShallow(state => ({
+            resetSession: state.resetSession,
+            t: state.t,
+            userProfile: state.userProfile,
+            voiceEnabled: state.voiceEnabled,
+            setVoiceEnabled: state.setVoiceEnabled,
+            selectedModel: state.selectedModel,
+            setSelectedModel: state.setSelectedModel,
+            getActiveKey: state.getActiveKey
+        }))
+    );
     const [input, setInput] = useState('');
     const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -284,10 +296,12 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
 
                                 {/* Message Bubble */}
                                 <div className={clsx(
-                                    "relative px-6 py-4 rounded-3xl max-w-[85%] shadow-md",
+                                    "relative px-6 py-4 rounded-3xl max-w-[85%] shadow-md border",
                                     msg.role === 'assistant'
-                                        ? 'bg-neutral-900/80 backdrop-blur-sm border border-white/5 text-neutral-200 rounded-tl-sm'
-                                        : 'bg-white text-neutral-900 rounded-tr-sm shadow-[0_0_20px_-5px_rgba(255,255,255,0.1)]'
+                                        ? 'bg-neutral-900/80 backdrop-blur-sm border-white/5 text-neutral-200 rounded-tl-sm'
+                                        : msg.status === 'error'
+                                            ? 'bg-red-500/10 border-red-500/30 text-red-200 rounded-tr-sm shadow-red-500/10'
+                                            : 'bg-white border-transparent text-neutral-900 rounded-tr-sm shadow-[0_0_20px_-5px_rgba(255,255,255,0.1)]'
                                 )}>
                                     {/* Copy button for assistant messages */}
                                     {msg.role === 'assistant' && (
@@ -300,11 +314,25 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
                                         </button>
                                     )}
 
+                                    {/* Retry button for failed user messages */}
+                                    {msg.role === 'user' && msg.status === 'error' && (
+                                        <button
+                                            onClick={retryLastMessage}
+                                            className="absolute -top-3 -left-3 p-2 bg-red-900 border border-red-700 rounded-xl opacity-0 group-hover:opacity-100 transition-all text-red-300 hover:text-white hover:bg-red-800 shadow-lg scale-90 hover:scale-100 flex items-center gap-1.5"
+                                            title="Retry Sending"
+                                        >
+                                            <RotateCcw className="w-3.5 h-3.5" />
+                                            <span className="text-[10px] uppercase font-bold tracking-wider">Retry</span>
+                                        </button>
+                                    )}
+
                                     <div className={clsx(
                                         "prose prose-sm max-w-none leading-relaxed",
                                         msg.role === 'assistant'
                                             ? 'prose-invert prose-p:text-neutral-300 prose-headings:text-white prose-strong:text-white prose-code:text-neutral-200 prose-code:bg-neutral-800/50 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-pre:bg-neutral-950 prose-pre:border prose-pre:border-white/10'
-                                            : 'prose-neutral prose-p:text-neutral-800'
+                                            : msg.status === 'error'
+                                                ? 'prose-p:text-red-200'
+                                                : 'prose-neutral prose-p:text-neutral-800'
                                     )}>
                                         {msg.role === 'assistant' ? (
                                             <ReactMarkdown>{msg.content}</ReactMarkdown>
@@ -321,6 +349,14 @@ export function ChatInterface({ onOpenSettings }: ChatInterfaceProps) {
                                                 ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                                                 : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                                             }
+                                        </div>
+                                    )}
+
+                                    {/* Error Message for User */}
+                                    {msg.role === 'user' && msg.status === 'error' && (
+                                        <div className="mt-2 text-xs font-semibold text-red-400 flex items-center gap-1.5">
+                                            <AlertCircle className="w-3.5 h-3.5" />
+                                            Faied to deliver. Please try again.
                                         </div>
                                     )}
                                 </div>

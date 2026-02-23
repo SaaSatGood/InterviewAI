@@ -44,6 +44,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -52,7 +54,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased bg-neutral-950 text-white selection:bg-white/30`}>
-        {children}
+        <ProtectedRoute>
+          {children}
+        </ProtectedRoute>
         <Analytics />
       </body>
     </html>

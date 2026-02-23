@@ -96,31 +96,19 @@ export function AudioVisualizer({ isSpeaking, micVolume, segments }: AudioVisual
     }, [segments]);
 
     return (
-        <div className="h-full flex flex-col relative overflow-hidden bg-neutral-900/50 border-r border-white/5">
+        <div className="h-full flex flex-col relative overflow-hidden bg-neutral-900/50">
             {/* 1. Header / Status */}
-            <div className="absolute top-0 left-0 right-0 p-6 z-20 bg-gradient-to-b from-neutral-950 to-transparent">
+            <div className="p-4 z-20 bg-neutral-950 border-b border-white/5 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-3">
-                    <div className={`w-2 h-2 rounded-full ${isSpeaking ? 'bg-white animate-pulse' : 'bg-neutral-600'}`} />
+                    <div className={`w-2 h-2 rounded-full ${isSpeaking ? 'bg-emerald-500 animate-pulse' : 'bg-neutral-600'}`} />
                     <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">
-                        {isSpeaking ? t('coach.listeningTo') : t('coach.monitoring')}
+                        {isSpeaking ? "Ouvindo" : "Aguardando Áudio"}
                     </span>
                 </div>
             </div>
 
-            {/* 2. Visual Pulse (Centered Background) */}
-            <div className="absolute inset-x-0 top-0 h-1/2 flex items-center justify-center pointer-events-none z-10">
-                <motion.div
-                    animate={{
-                        scale: isSpeaking ? [1, 1.2, 1] : [1, 1.05, 1],
-                        opacity: isSpeaking ? [0.1, 0.3, 0.1] : [0.05, 0.1, 0.05],
-                    }}
-                    transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                    className="w-[300px] h-[300px] lg:w-[500px] lg:h-[500px] bg-white/5 rounded-full blur-[80px]"
-                />
-            </div>
-
-            {/* 3. Transcript Feed */}
-            <div className="flex-1 mt-32 px-6 pb-6 overflow-y-auto z-20 space-y-4 scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-transparent md:pr-4" ref={scrollRef}>
+            {/* 2. Transcript Feed */}
+            <div className="flex-1 p-4 overflow-y-auto z-20 space-y-4 scrollbar-thin scrollbar-thumb-neutral-800 scrollbar-track-transparent" ref={scrollRef}>
                 {segments.length === 0 && (
                     <div className="h-full flex flex-col items-center justify-center text-center opacity-50">
                         <Mic className="w-8 h-8 text-neutral-600 mb-4" />
@@ -132,28 +120,56 @@ export function AudioVisualizer({ isSpeaking, micVolume, segments }: AudioVisual
                     const isRecruiter = seg.speaker === 'recruiter';
                     return (
                         <motion.div
-                            key={i}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className={`flex gap-4 ${isRecruiter ? 'flex-row' : 'flex-row-reverse'}`}
+                            key={seg.id || i}
+                            layout
+                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                            className={`flex gap-3 ${isRecruiter ? 'flex-row' : 'flex-row-reverse'}`}
                         >
-                            <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-white/10 text-white">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-auto mb-1 ${isRecruiter ? 'bg-indigo-500/20 text-indigo-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
                                 <User className="w-4 h-4" />
                             </div>
-                            <div className={`max-w-[80%] rounded-2xl px-5 py-3 text-sm leading-relaxed ${isRecruiter
-                                ? 'bg-white/5 text-neutral-200 rounded-tl-none border border-white/5'
-                                : 'bg-white/10 text-white rounded-tr-none border border-white/20'
+                            <div className={`max-w-[85%] rounded-[1.25rem] px-4 py-2.5 text-sm leading-relaxed shadow-sm ${isRecruiter
+                                ? 'bg-indigo-500/10 text-indigo-100 rounded-bl-sm border border-indigo-500/20'
+                                : 'bg-emerald-500/10 text-emerald-100 rounded-br-sm border border-emerald-500/20'
                                 }`}>
                                 {seg.text}
                             </div>
                         </motion.div>
                     );
                 })}
-            </div>
 
-            {/* 4. Canvas Waveform (Bottom) — smooth 60fps rendering */}
-            <div className="h-16 border-t border-white/5 bg-black/20 backdrop-blur-sm">
-                <CanvasWaveform isSpeaking={isSpeaking} micVolume={micVolume} />
+                {/* Live Typing / Listening Indicator */}
+                {isSpeaking && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="flex gap-3 flex-row"
+                    >
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-auto mb-1 bg-white/5 text-neutral-500">
+                            <User className="w-4 h-4" />
+                        </div>
+                        <div className="bg-neutral-800/50 border border-white/5 rounded-[1.25rem] rounded-bl-sm px-4 py-3 flex items-center gap-1.5 h-10 shadow-sm">
+                            <motion.div
+                                animate={{ y: [0, -3, 0] }}
+                                transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
+                                className="w-1.5 h-1.5 bg-neutral-500 rounded-full"
+                            />
+                            <motion.div
+                                animate={{ y: [0, -3, 0] }}
+                                transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }}
+                                className="w-1.5 h-1.5 bg-neutral-500 rounded-full"
+                            />
+                            <motion.div
+                                animate={{ y: [0, -3, 0] }}
+                                transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }}
+                                className="w-1.5 h-1.5 bg-neutral-500 rounded-full"
+                            />
+                        </div>
+                    </motion.div>
+                )}
             </div>
         </div>
     );

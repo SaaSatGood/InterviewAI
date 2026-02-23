@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { useAppStore } from '@/lib/store';
+import { useShallow } from 'zustand/react/shallow';
 import { Button } from './ui/Button';
 import { POSITIONS, STACKS, DIFFICULTIES, SOFT_SKILLS, BUSINESS_TOPICS, MODERN_PRACTICES } from '@/lib/constants';
 import { LANGUAGES, Language, detectBrowserLanguage } from '@/lib/i18n';
@@ -10,7 +12,7 @@ import {
     ChevronRight, ChevronLeft, Code2, Briefcase, GraduationCap, Search, Sparkles,
     Layout, Server, Layers, Smartphone, Cloud, Database, Brain, TestTube, Shield,
     Activity, Building, Gamepad, Link as LinkIcon, Rocket, Users, Target, Zap, Star,
-    Gift, CreditCard, ArrowRight, Globe, Check, Heart, TrendingUp, Wrench, CheckCircle2, FileText, Headphones, History as HistoryIcon,
+    Gift, CreditCard, ArrowRight, Check, Heart, TrendingUp, Wrench, CheckCircle2, FileText, Headphones, History as HistoryIcon,
     User, LogIn, Mic, Settings, Play
 } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -50,8 +52,19 @@ interface InterviewSetupProps {
 }
 
 export function InterviewSetup({ onOpenApiKeyModal, onOpenLiveCoach }: InterviewSetupProps) {
-    const { userProfile, setUserProfile, language, setLanguage, t, isConfigured, lastProfile, setLastProfile } = useAppStore();
-    const [step, setStep] = useState(0);
+    const { userProfile, setUserProfile, language, setLanguage, t, isConfigured, lastProfile, setLastProfile } = useAppStore(
+        useShallow(state => ({
+            userProfile: state.userProfile,
+            setUserProfile: state.setUserProfile,
+            language: state.language,
+            setLanguage: state.setLanguage,
+            t: state.t,
+            isConfigured: state.isConfigured,
+            lastProfile: state.lastProfile,
+            setLastProfile: state.setLastProfile
+        }))
+    );
+    const [step, setStep] = useState(1);
     const [selectedArea, setSelectedArea] = useState<'tech' | 'sales' | 'support' | ''>('');
     const [selectedPosition, setSelectedPosition] = useState('');
     const [selectedStacks, setSelectedStacks] = useState<string[]>([]);
@@ -61,6 +74,8 @@ export function InterviewSetup({ onOpenApiKeyModal, onOpenLiveCoach }: Interview
     const [selectedDifficulty, setSelectedDifficulty] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [showLangMenu, setShowLangMenu] = useState(false);
+
+    const router = useRouter();
 
     useEffect(() => {
         if (!language) {
@@ -223,6 +238,8 @@ export function InterviewSetup({ onOpenApiKeyModal, onOpenLiveCoach }: Interview
                                                 key={area.id}
                                                 variants={staggerItem}
                                                 onClick={() => { setSelectedArea(area.id as any); setSelectedPosition(''); setSelectedStacks([]); }}
+                                                aria-selected={isSelected}
+                                                role="option"
                                                 className={clsx(
                                                     "p-6 rounded-2xl border text-left transition-all duration-300 flex items-center gap-6 group hover:translate-x-1",
                                                     isSelected
@@ -285,6 +302,8 @@ export function InterviewSetup({ onOpenApiKeyModal, onOpenLiveCoach }: Interview
                                                 key={pos.id}
                                                 variants={staggerItem}
                                                 onClick={() => { setSelectedPosition(pos.id); setSelectedStacks([]); setSearchTerm(''); }}
+                                                aria-selected={isSelected}
+                                                role="option"
                                                 className={clsx(
                                                     "p-4 rounded-xl border text-left transition-all duration-200 flex items-center gap-4 group",
                                                     isSelected
@@ -344,6 +363,8 @@ export function InterviewSetup({ onOpenApiKeyModal, onOpenLiveCoach }: Interview
                                                 key={stack.id}
                                                 variants={staggerItem}
                                                 onClick={() => toggleSelection(stack.id, selectedStacks, setSelectedStacks)}
+                                                aria-selected={isSelected}
+                                                role="option"
                                                 className={clsx(
                                                     "p-3 rounded-xl border text-left transition-all duration-200 flex items-center gap-3",
                                                     isSelected

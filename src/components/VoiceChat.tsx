@@ -14,6 +14,7 @@ import {
     AI_MODELS,
 } from '@/lib/voice';
 import { useAppStore, Provider } from '@/lib/store';
+import { useShallow } from 'zustand/react/shallow';
 import {
     X,
     MessageSquare,
@@ -43,7 +44,17 @@ export function VoiceChat({
     lastAiMessage,
     isAiResponding,
 }: VoiceChatProps) {
-    const { language, t, getActiveKey, selectedModel, setSelectedModel, voiceSettings, setVoiceSettings } = useAppStore();
+    const { language, t, getActiveKey, selectedModel, setSelectedModel, voiceSettings, setVoiceSettings } = useAppStore(
+        useShallow(state => ({
+            language: state.language,
+            t: state.t,
+            getActiveKey: state.getActiveKey,
+            selectedModel: state.selectedModel,
+            setSelectedModel: state.setSelectedModel,
+            voiceSettings: state.voiceSettings,
+            setVoiceSettings: state.setVoiceSettings
+        }))
+    );
     const activeKey = getActiveKey();
     const provider = activeKey?.provider || 'openai';
 

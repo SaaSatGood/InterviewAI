@@ -211,6 +211,8 @@ export const useAppStore = create<AppState>()(
         history: state.history,
         lastProfile: state.lastProfile,
         aiMode: state.aiMode,
+        userProfile: state.userProfile,
+        report: state.report,
       }),
       onRehydrateStorage: () => (state) => {
         // Auto-detect language on first visit if not set

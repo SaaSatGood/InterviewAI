@@ -45,11 +45,21 @@ export function useLiveCoach(): LiveCoachReturn {
 
             // Build recent transcript text
             const recentSegments = segments.slice(-MAX_CONTEXT_SEGMENTS);
+            const currentMode = useAppStore.getState().aiMode;
+
+            // Dynamic labels based on mode
+            const speakerLabels = {
+                sales: { recruiter: '🟦 Prospecto', candidate: '🟩 Você (Closer)' },
+                support: { recruiter: '🟦 Cliente', candidate: '🟩 Agente (Você)' },
+                interview: { recruiter: '🟦 Entrevistador', candidate: '🟩 Candidato (Você)' },
+            };
+            const labels = speakerLabels[currentMode] || speakerLabels.sales;
+
             const transcriptText = recentSegments
                 .map(s => {
-                    const label = s.speaker === 'recruiter' ? '🟦 Recruiter'
-                        : s.speaker === 'candidate' ? '🟩 Candidate'
-                            : '⬜ Unknown';
+                    const label = s.speaker === 'recruiter' ? labels.recruiter
+                        : s.speaker === 'candidate' ? labels.candidate
+                            : '⬜ Desconhecido';
                     return `${label}: ${s.text}`;
                 })
                 .join('\n');

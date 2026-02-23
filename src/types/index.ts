@@ -2,6 +2,7 @@ export interface Message {
     role: 'system' | 'user' | 'assistant';
     content: string;
     timestamp?: number;
+    status?: 'error';
 }
 
 export interface QuestionAnalysis {

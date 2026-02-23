@@ -76,64 +76,82 @@ export class RealtimeTranscriber {
     }
 
     private async connectWebSocket(): Promise<void> {
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             const model = this.config.model || 'gpt-4o-realtime-preview';
             const wsUrl = `wss://api.openai.com/v1/realtime?model=${model}`;
 
-            this.ws = new WebSocket(wsUrl, [
-                'realtime',
-                `openai-insecure-api-key.${this.config.apiKey}`,
-                'openai-beta.realtime-v1',
-            ]);
+            try {
+                // Securely request Ephemeral Session Token from Backend
+                const sessionRes = await fetch('/api/ai/realtime-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ apiKey: this.config.apiKey })
+                });
 
-            this.ws.onopen = () => {
-                this.reconnectAttempts = 0;
-                this.onStatusChange('connected');
-
-                // Configure session for transcription-only
-                this.ws?.send(JSON.stringify({
-                    type: 'session.update',
-                    session: {
-                        modalities: ['text'],
-                        input_audio_transcription: {
-                            model: 'whisper-1',
-                            language: this.config.language || undefined,
-                        },
-                        turn_detection: {
-                            type: 'server_vad',
-                            threshold: 0.5,
-                            prefix_padding_ms: 300,
-                            silence_duration_ms: 1000,
-                        },
-                    },
-                }));
-                resolve();
-
-                // Start health check — detect stale connections
-                this.startHealthCheck();
-            };
-
-            this.ws.onmessage = (event) => {
-                this.lastMessageAt = Date.now();
-                try {
-                    const msg = JSON.parse(event.data);
-                    this.handleMessage(msg);
-                } catch {
-                    // Ignore malformed messages
+                if (!sessionRes.ok) {
+                    throw new Error('Failed to acquire session token');
                 }
-            };
+                const sessionData = await sessionRes.json();
+                const ephemeralToken = sessionData.client_secret.value;
 
-            this.ws.onerror = (error) => {
-                console.error('WebSocket error:', error);
-                // Don't reject here instantly, let onclose handle it or specific timeout
-            };
+                // Use the ephemeral token for the secure subprotocol
+                this.ws = new WebSocket(wsUrl, [
+                    'realtime',
+                    `openai-insecure-api-key.${ephemeralToken}`,
+                    'openai-beta.realtime-v1',
+                ]);
 
-            this.ws.onclose = () => {
-                if (this.isActive) {
-                    this.onStatusChange('disconnected');
-                    this.attemptReconnect();
-                }
-            };
+                this.ws.onopen = () => {
+                    this.reconnectAttempts = 0;
+                    this.onStatusChange('connected');
+
+                    // Configure session for transcription-only
+                    this.ws?.send(JSON.stringify({
+                        type: 'session.update',
+                        session: {
+                            modalities: ['text'],
+                            input_audio_transcription: {
+                                model: 'whisper-1',
+                                language: this.config.language || undefined,
+                            },
+                            turn_detection: {
+                                type: 'server_vad',
+                                threshold: 0.5,
+                                prefix_padding_ms: 300,
+                                silence_duration_ms: 1000,
+                            },
+                        },
+                    }));
+                    resolve();
+
+                    // Start health check — detect stale connections
+                    this.startHealthCheck();
+                };
+
+                this.ws.onmessage = (event) => {
+                    this.lastMessageAt = Date.now();
+                    try {
+                        const msg = JSON.parse(event.data);
+                        this.handleMessage(msg);
+                    } catch {
+                        // Ignore malformed messages
+                    }
+                };
+
+                this.ws.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                    // Don't reject here instantly, let onclose handle it or specific timeout
+                };
+
+                this.ws.onclose = () => {
+                    if (this.isActive) {
+                        this.onStatusChange('disconnected');
+                        this.attemptReconnect();
+                    }
+                };
+            } catch (err) {
+                reject(err);
+            }
         });
     }
 
@@ -239,7 +257,9 @@ export class RealtimeTranscriber {
 
         this.mediaStreamSource?.disconnect();
         this.audioWorkletNode?.disconnect();
-        this.audioContext?.close();
+        if (this.audioContext && this.audioContext.state !== 'closed') {
+            this.audioContext.close();
+        }
 
         this.mediaStreamSource = null;
         this.audioWorkletNode = null;
